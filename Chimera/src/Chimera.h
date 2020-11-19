@@ -3,7 +3,8 @@
 //For use by Chimera applications
 
 #include "Chimera/Application.h"
-#include "Chimera/Core.h"
+#include "Chimera/Layer.h"
+#include "Chimera/Log.h"
 
 //--------ENTRY POINT----------------
 #include "Chimera/EntryPoint.h"

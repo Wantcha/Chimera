@@ -1,36 +1,75 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Chimera">
+      <UniqueIdentifier>{3E947F23-AA73-FEBE-B38B-89951FEA6420}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Chimera\Events">
+      <UniqueIdentifier>{624E1871-4E1C-0C77-37B0-7C9D231DE8DB}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{64FBD71A-50F4-F66C-7926-DCF1657ED678}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Chimera\Core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="src\Chimera.h" />
     <ClInclude Include="src\Chimera\Application.h">
-      <Filter>Header Files</Filter>
+      <Filter>Chimera</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chimera.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\Chimera\Core.h">
+      <Filter>Chimera</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\EntryPoint.h">
-      <Filter>Header Files</Filter>
+      <Filter>Chimera</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chimera\Events\ApplicationEvent.h">
+      <Filter>Chimera\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Events\Event.h">
+      <Filter>Chimera\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Events\KeyEvent.h">
+      <Filter>Chimera\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Events\MouseEvent.h">
+      <Filter>Chimera\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Layer.h">
+      <Filter>Chimera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\LayerStack.h">
+      <Filter>Chimera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Log.h">
+      <Filter>Chimera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Window.h">
+      <Filter>Chimera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmpch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chimera\Application.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Chimera</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chimera\Layer.cpp">
+      <Filter>Chimera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\LayerStack.cpp">
+      <Filter>Chimera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Log.cpp">
+      <Filter>Chimera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmpch.cpp" />
   </ItemGroup>
 </Project>

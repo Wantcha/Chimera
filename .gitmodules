@@ -1,0 +1,9 @@
+[submodule "Chimera/vendor/spdlog"]
+	path = Chimera/vendor/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "Chimera/vendor/GLFW"]
+	path = Chimera/vendor/GLFW
+	url = https://github.com/TheCherno/GLFW
+[submodule "Chimera/vendor/imgui"]
+	path = Chimera/vendor/imgui
+	url = https://github.com/TheCherno/imgui

@@ -11,3 +11,14 @@
 
 #endif
 
+#define BIT(x) (1<<x)
+
+#ifdef CM_ENABLE_ASSERTS
+	#define CM_ASSERT(x, ...) { if (!(x)) { CM_ERROR("Assertion Failed {0}", __VA_ARGS__); __debugbreak(); } }
+	#define CM_CORE_ASSERT (x, ...) { if(!(x)) { CM_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#else
+	#define CM_ASSERT(x, ...)
+	#define CM_CORE_ASSERT(x, ...)
+#endif // CM_ENABLE_ASSERTS
+
+

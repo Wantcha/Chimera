@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>H:\Programming\Chimera\bin\Debug-windows-x86_64\Chimera\Chimera.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>H:\Programming\Chimera\bin\Debug-windows-x86_64\Sandbox\Sandbox.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
