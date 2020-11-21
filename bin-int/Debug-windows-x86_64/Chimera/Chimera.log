@@ -1,9 +1,4 @@
-﻿  cmpch.cpp
-H:\Programming\Chimera\Chimera\src\Chimera\Log.h(17,54): warning C4251: 'Chimera::Log::s_CoreLogger': class 'std::shared_ptr<spdlog::logger>' needs to have dll-interface to be used by clients of class 'Chimera::Log'
-H:\Programming\Chimera\Chimera\vendor\spdlog\include\spdlog\details\registry.h(34): message : see declaration of 'std::shared_ptr<spdlog::logger>'
-H:\Programming\Chimera\Chimera\src\Chimera\Log.h(18,56): warning C4251: 'Chimera::Log::s_ClientLogger': class 'std::shared_ptr<spdlog::logger>' needs to have dll-interface to be used by clients of class 'Chimera::Log'
-H:\Programming\Chimera\Chimera\vendor\spdlog\include\spdlog\details\registry.h(34): message : see declaration of 'std::shared_ptr<spdlog::logger>'
-  Application.cpp
+﻿  Application.cpp
 H:\Programming\Chimera\Chimera\src\Chimera\Layer.h(22,26): warning C4251: 'Chimera::Layer::m_DebugName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'Chimera::Layer'
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\xstring(4648): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
 H:\Programming\Chimera\Chimera\src\Chimera\LayerStack.h(25,31): warning C4251: 'Chimera::LayerStack::m_Layers': class 'std::vector<Chimera::Layer *,std::allocator<Chimera::Layer *>>' needs to have dll-interface to be used by clients of class 'Chimera::LayerStack'
@@ -18,12 +13,9 @@ C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.2
           [
               _Ty=Chimera::Layer *
           ]
-H:\Programming\Chimera\Chimera\src\Chimera\Application.h(26,35): warning C4251: 'Chimera::Application::m_Window': class 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>' needs to have dll-interface to be used by clients of class 'Chimera::Application'
-H:\Programming\Chimera\Chimera\src\Chimera\Application.h(26): message : see declaration of 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>'
-  Layer.cpp
-H:\Programming\Chimera\Chimera\src\Chimera\Layer.h(22,26): warning C4251: 'Chimera::Layer::m_DebugName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'Chimera::Layer'
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\xstring(4648): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
-  LayerStack.cpp
+H:\Programming\Chimera\Chimera\src\Chimera\Application.h(30,35): warning C4251: 'Chimera::Application::m_Window': class 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>' needs to have dll-interface to be used by clients of class 'Chimera::Application'
+H:\Programming\Chimera\Chimera\src\Chimera\Application.h(30): message : see declaration of 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>'
+  ImGuiLayer.cpp
 H:\Programming\Chimera\Chimera\src\Chimera\Layer.h(22,26): warning C4251: 'Chimera::Layer::m_DebugName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'Chimera::Layer'
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\xstring(4648): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
 H:\Programming\Chimera\Chimera\src\Chimera\LayerStack.h(25,31): warning C4251: 'Chimera::LayerStack::m_Layers': class 'std::vector<Chimera::Layer *,std::allocator<Chimera::Layer *>>' needs to have dll-interface to be used by clients of class 'Chimera::LayerStack'
@@ -38,7 +30,29 @@ C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.2
           [
               _Ty=Chimera::Layer *
           ]
-  Log.cpp
+H:\Programming\Chimera\Chimera\src\Chimera\Application.h(30,35): warning C4251: 'Chimera::Application::m_Window': class 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>' needs to have dll-interface to be used by clients of class 'Chimera::Application'
+H:\Programming\Chimera\Chimera\src\Chimera\Application.h(30): message : see declaration of 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>'
+H:\Programming\Chimera\Chimera\src\Chimera\ImGui\ImGuiLayer.cpp(64,82): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+H:\Programming\Chimera\Chimera\src\Chimera\ImGui\ImGuiLayer.cpp(64,53): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+H:\Programming\Chimera\Chimera\src\Chimera\ImGui\ImGuiLayer.cpp(130,54): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+H:\Programming\Chimera\Chimera\src\Chimera\ImGui\ImGuiLayer.cpp(130,39): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+  WindowsInput.cpp
+H:\Programming\Chimera\Chimera\src\Chimera\Layer.h(22,26): warning C4251: 'Chimera::Layer::m_DebugName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'Chimera::Layer'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\xstring(4648): message : see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+H:\Programming\Chimera\Chimera\src\Chimera\LayerStack.h(25,31): warning C4251: 'Chimera::LayerStack::m_Layers': class 'std::vector<Chimera::Layer *,std::allocator<Chimera::Layer *>>' needs to have dll-interface to be used by clients of class 'Chimera::LayerStack'
+H:\Programming\Chimera\Chimera\src\Chimera\LayerStack.h(21): message : see declaration of 'std::vector<Chimera::Layer *,std::allocator<Chimera::Layer *>>'
+H:\Programming\Chimera\Chimera\src\Chimera\LayerStack.h(26,46): warning C4251: 'Chimera::LayerStack::m_LayerInsert': class 'std::_Vector_iterator<std::_Vector_val<std::_Simple_types<_Ty>>>' needs to have dll-interface to be used by clients of class 'Chimera::LayerStack'
+          with
+          [
+              _Ty=Chimera::Layer *
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29333\include\vector(440): message : see declaration of 'std::_Vector_iterator<std::_Vector_val<std::_Simple_types<_Ty>>>'
+          with
+          [
+              _Ty=Chimera::Layer *
+          ]
+H:\Programming\Chimera\Chimera\src\Chimera\Application.h(30,35): warning C4251: 'Chimera::Application::m_Window': class 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>' needs to have dll-interface to be used by clients of class 'Chimera::Application'
+H:\Programming\Chimera\Chimera\src\Chimera\Application.h(30): message : see declaration of 'std::unique_ptr<Chimera::Window,std::default_delete<Chimera::Window>>'
   WindowsWindow.cpp
   Generating Code...
      Creating library ..\bin\Debug-windows-x86_64\Chimera\Chimera.lib and object ..\bin\Debug-windows-x86_64\Chimera\Chimera.exp
