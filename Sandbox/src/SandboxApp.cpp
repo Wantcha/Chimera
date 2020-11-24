@@ -1,5 +1,7 @@
 #include <Chimera.h>
 
+#include "imgui/imgui.h"
+
 class ExampleLayer : public Chimera::Layer
 {
 public:
@@ -9,12 +11,26 @@ public:
 
 	void OnUpdate() override
 	{
-		CM_INFO("ExampleLayer::Update");
+		//CM_INFO("ExampleLayer::Update");
+
+		if (Chimera::Input::IsKeyPressed(KEY_TAB))
+			CM_TRACE("Tab key is pressed!");
 	}
 
 	void OnEvent(Chimera::Event& event) override
 	{
-		CM_TRACE("{0}", event);
+		if (event.GetEventType() == Chimera::EventType::KeyPressed)
+		{
+			Chimera::KeyPressedEvent& e = (Chimera::KeyPressedEvent&)event;
+			CM_TRACE("{0}", (char)e.GetKeyCode());
+		}
+	}
+
+	void OnImGuiRender() override
+	{
+		ImGui::Begin("Test");
+		ImGui::Text("Hello boys");
+		ImGui::End();
 	}
 };
 
@@ -24,7 +40,6 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
-		PushOverlay(new Chimera::ImGuiLayer());
 	}
 
 	~Sandbox()

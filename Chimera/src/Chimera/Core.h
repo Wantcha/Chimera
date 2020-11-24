@@ -1,11 +1,15 @@
 #pragma once
 
 #ifdef CM_PLATFORM_WINDOWS
+#if CM_DYNAMIC_LINK
 	#ifdef CM_BUILD_DLL
 		#define CHIMERA_API __declspec(dllexport)
 	#else
 		#define CHIMERA_API __declspec(dllimport)
 	#endif
+#else
+	#define CHIMERA_API
+#endif
 #else
 	#error Chimera only supports Windows!
 

@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "Window.h"
+#include "Chimera/ImGui/ImGuiLayer.h"
 #include "Chimera/LayerStack.h"
 #include "Events/Event.h"
 
@@ -28,6 +29,7 @@ namespace Chimera {
 		bool OnWindowClosed(WindowCloseEvent& e);
 
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer; 
 		bool m_Running = true;
 		LayerStack m_LayerStack;
 

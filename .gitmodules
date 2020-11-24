@@ -7,3 +7,6 @@
 [submodule "Chimera/vendor/imgui"]
 	path = Chimera/vendor/imgui
 	url = https://github.com/TheCherno/imgui
+[submodule "Chimera/vendor/glm"]
+	path = Chimera/vendor/glm
+	url = https://github.com/g-truc/glm

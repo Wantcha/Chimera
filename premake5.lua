@@ -16,6 +16,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "Chimera/vendor/GLFW/include"
 IncludeDir["Glad"] = "Chimera/vendor/GLAD/include"
 IncludeDir["ImGui"] = "Chimera/vendor/imgui"
+IncludeDir["glm"] = "Chimera/vendor/glm"
 
 -- Include premake files from other projects
 include "Chimera/vendor/GLFW"
@@ -24,9 +25,10 @@ include "Chimera/vendor/imgui"
 
 project "Chimera"
 	location "Chimera"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	staticruntime "off"
+	staticruntime "on"
+	cppdialect "C++17"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -40,13 +42,19 @@ project "Chimera"
 		"%{prj.name}/src/**.cpp"
 	}
 
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
 	includedirs
 	{
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/src",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -58,7 +66,6 @@ project "Chimera"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -67,32 +74,28 @@ project "Chimera"
 			"CM_BUILD_DLL",
 			"GLFW_INCLUDE_NONE"
 		}
-		
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
-		}
 
 	filter "configurations:Debug"
 		defines "CM_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "CM_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "CM_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -106,7 +109,9 @@ project "Sandbox"
 	includedirs
 	{
 		"Chimera/vendor/spdlog/include",
-		"Chimera/src"
+		"Chimera/src",
+		"Chimera/vendor",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -115,7 +120,6 @@ project "Sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
 		defines
@@ -126,14 +130,14 @@ project "Sandbox"
 	filter "configurations:Debug"
 		defines "CM_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "CM_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "CM_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
