@@ -155,7 +155,9 @@
     <ClInclude Include="src\Chimera\LayerStack.h" />
     <ClInclude Include="src\Chimera\Log.h" />
     <ClInclude Include="src\Chimera\MouseButtonCodes.h" />
+    <ClInclude Include="src\Chimera\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Chimera\Window.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\cmpch.h" />
@@ -167,6 +169,7 @@
     <ClCompile Include="src\Chimera\Layer.cpp" />
     <ClCompile Include="src\Chimera\LayerStack.cpp" />
     <ClCompile Include="src\Chimera\Log.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\cmpch.cpp">

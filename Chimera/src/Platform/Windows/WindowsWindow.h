@@ -3,6 +3,8 @@
 #include "Chimera/Window.h"
 #include <GLFW/glfw3.h>
 
+#include "Chimera/Renderer/GraphicsContext.h"
+
 
 namespace Chimera
 {
@@ -28,6 +30,7 @@ namespace Chimera
 		virtual void Shutdown();
 
 		GLFWwindow* m_Window;
+		GraphicsContext* m_Context;
 
 		struct WindowData
 		{
