@@ -11,6 +11,9 @@
 #include "Chimera/Renderer/Shader.h"
 #include "Chimera/Renderer/Buffer.h"
 #include "Chimera/Renderer/VertexArray.h"
+#include "Chimera/Renderer/OrthographicCamera.h"
+
+#include "Chimera/Core/Timestep.h"
 
 namespace Chimera {
 	class CHIMERA_API Application
@@ -36,12 +39,7 @@ namespace Chimera {
 		ImGuiLayer* m_ImGuiLayer; 
 		bool m_Running = true;
 		LayerStack m_LayerStack;
-
-		std::shared_ptr<Shader> m_Shader;
-		std::shared_ptr<VertexArray> m_VertexArray;
-
-		std::shared_ptr<Shader> m_BlueShader;
-		std::shared_ptr<VertexArray> m_SquareVA;
+		float m_LastFrameTime = 0.0f;
 	private:
 		static Application* s_Instance;
 	};

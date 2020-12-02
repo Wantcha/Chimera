@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "Chimera/Renderer/Buffer.h"
 
 namespace Chimera

@@ -79,6 +79,11 @@
     <ClInclude Include="src\Chimera\Renderer\Renderer.h" />
     <ClInclude Include="src\Chimera\Renderer\VertexArray.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="src\Chimera\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Chimera\Renderer\RenderCommand.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
+    <ClInclude Include="src\Chimera\Renderer\OrthographicCamera.h" />
+    <ClInclude Include="src\Chimera\Core\Timestep.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chimera\Application.cpp">
@@ -113,5 +118,9 @@
     <ClCompile Include="src\Chimera\Renderer\Renderer.cpp" />
     <ClCompile Include="src\Chimera\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp" />
+    <ClCompile Include="src\Chimera\Renderer\RendererAPI.cpp" />
+    <ClCompile Include="src\Chimera\Renderer\RenderCommand.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
+    <ClCompile Include="src\Chimera\Renderer\OrthographicCamera.cpp" />
   </ItemGroup>
 </Project>
