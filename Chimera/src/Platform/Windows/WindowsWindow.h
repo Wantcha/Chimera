@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Chimera/Window.h"
+#include "Chimera/Core/Window.h"
 #include <GLFW/glfw3.h>
 
 #include "Chimera/Renderer/GraphicsContext.h"

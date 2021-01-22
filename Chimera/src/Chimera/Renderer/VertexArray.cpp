@@ -7,12 +7,14 @@
 
 namespace Chimera
 {
-	VertexArray* VertexArray::Create()
+	Ref<VertexArray> VertexArray::Create()
 	{
+		CM_PROFILE_FUNCTION();
+
 		switch (Renderer::GetAPI())
 		{
 			case RendererAPI::API::None: CM_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-			case RendererAPI::API::OpenGL: return new OpenGLVertexArray();
+			case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexArray>();
 		}
 		CM_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;

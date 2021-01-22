@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cmpch.h"
-#include "Chimera/Core.h"
+#include "Chimera/Core/Core.h"
 namespace Chimera
 {
 	// Events are currently blocking, meaning when an event occurs it immediately
@@ -37,6 +37,8 @@ namespace Chimera
 	{
 		friend class EventDispatcher;
 	public:
+		virtual ~Event() = default;
+
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;

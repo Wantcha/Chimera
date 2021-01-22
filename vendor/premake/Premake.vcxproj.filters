@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{61705900-4DFC-870B-B6AA-880BA255880B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera">
+      <UniqueIdentifier>{894DC65D-7505-08AB-DE0C-E106CAE3A29B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera\vendor">
+      <UniqueIdentifier>{C62FDCDB-3246-DA71-7BBD-6593E712ABF9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera\vendor\GLFW">
+      <UniqueIdentifier>{C5B62919-B1B0-526B-9A1D-E97B86B6B8D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera\vendor\Glad">
+      <UniqueIdentifier>{6D422A19-593C-536B-42A9-E97B2E42B9D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera\vendor\imgui">
+      <UniqueIdentifier>{B079DA40-1CB1-22D8-25BB-86FB917149D1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera-Editor">
+      <UniqueIdentifier>{1D5D86CF-8973-8465-D2EA-0F873E4055ED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Sandbox">
+      <UniqueIdentifier>{3F7B6B1D-2B33-AD6A-943A-86C68011485B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Chimera-Editor\premake5.lua">
+      <Filter>..\Chimera-Editor</Filter>
+    </None>
+    <None Include="..\..\Chimera\premake5.lua">
+      <Filter>..\Chimera</Filter>
+    </None>
+    <None Include="..\..\Chimera\vendor\GLFW\premake5.lua">
+      <Filter>..\Chimera\vendor\GLFW</Filter>
+    </None>
+    <None Include="..\..\Chimera\vendor\Glad\premake5.lua">
+      <Filter>..\Chimera\vendor\Glad</Filter>
+    </None>
+    <None Include="..\..\Chimera\vendor\imgui\premake5.lua">
+      <Filter>..\Chimera\vendor\imgui</Filter>
+    </None>
+    <None Include="..\..\Sandbox\premake5.lua">
+      <Filter>..\Sandbox</Filter>
+    </None>
+    <None Include="..\..\premake5.lua">
+      <Filter>..</Filter>
+    </None>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>

@@ -8,11 +8,13 @@
 
 #include <string>
 #include <sstream>
+#include <array>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Chimera/Log.h"
+#include "Chimera/Core/Log.h"
+#include "Chimera/Debug/Instrumentor.h"
 
 #ifdef CM_PLATFORM_WINDOWS
 	#include <Windows.h>
