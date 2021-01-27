@@ -13,6 +13,8 @@
 
 #include <glad/glad.h>
 
+#include "ImGuizmo.h"
+
 Chimera::ImGuiLayer::ImGuiLayer()
 	:Layer("ImGuiLayer")
 {
@@ -38,6 +40,9 @@ void Chimera::ImGuiLayer::OnAttach()
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNotTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
+    io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Bold.ttf", 16.0f);
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Regular.ttf", 16.0f);
+
     ImGui::StyleColorsDark();
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -46,6 +51,8 @@ void Chimera::ImGuiLayer::OnAttach()
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
+
+    SetDarkThemeColors();
 
     Application& app = Application::Get();
     GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
@@ -87,6 +94,7 @@ void Chimera::ImGuiLayer::Begin()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
 }
 
 void Chimera::ImGuiLayer::End()
@@ -108,4 +116,38 @@ void Chimera::ImGuiLayer::End()
         ImGui::RenderPlatformWindowsDefault();
         glfwMakeContextCurrent(backup_current_context);
     }
+}
+
+void Chimera::ImGuiLayer::SetDarkThemeColors()
+{
+    auto& colors = ImGui::GetStyle().Colors;
+
+    colors[ImGuiCol_WindowBg] = ImVec4{ 0.09f, 0.105, 0.115f, 1.0f };
+
+    //Headers
+    colors[ImGuiCol_Header] = ImVec4{ 0.19f, 0.205, 0.215f, 1.0f };
+    colors[ImGuiCol_HeaderHovered] = ImVec4{ 0.29f, 0.305f, 0.315f, 1.0f };
+    colors[ImGuiCol_HeaderActive] = ImVec4{ 0.14f, 0.15f, 0.155f, 1.0f };
+
+    //Buttons
+    colors[ImGuiCol_Button] = ImVec4{ 0.19f, 0.2f, 0.215f, 1.0f };
+    colors[ImGuiCol_ButtonHovered] = ImVec4{ 0.29f, 0.305, 0.31f, 1.0f };
+    colors[ImGuiCol_ButtonActive] = ImVec4{ 0.14f, 0.15f, 0.15f, 1.0f };
+
+    //Frame BG
+    colors[ImGuiCol_FrameBg] = ImVec4{ 0.19f, 0.205f, 0.215f, 1.0f };
+    colors[ImGuiCol_FrameBgHovered] = ImVec4{ 0.29f, 0.305f, 0.31f, 1.0f };
+    colors[ImGuiCol_FrameBgActive] = ImVec4{ 0.14f, 0.1505f, 0.151f, 1.0f };
+
+    //Tabs
+    colors[ImGuiCol_Tab] = ImVec4{ 0.14f, 0.15f, 0.16f, 1.0f };
+    colors[ImGuiCol_TabHovered] = ImVec4{ 0.37f, 0.38f, 0.385f, 1.0f };
+    colors[ImGuiCol_TabActive] = ImVec4{ 0.3f, 0.31f, 0.315f, 1.0f };
+    colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.14f, 0.15f, 0.155f, 1.0f };
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.19f, 0.205, 0.215f, 1.0f };
+
+    //Title
+    colors[ImGuiCol_TitleBg] = ImVec4{ 0.14f, 0.1505f, 0.155f, 1.0f };
+    colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.14f, 0.1505f, 0.155f, 1.0f };
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.94f, 0.15f, 0.95f, 1.0f };
 }

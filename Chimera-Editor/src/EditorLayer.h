@@ -3,6 +3,8 @@
 #include "Chimera.h"
 #include "Panels/SceneHierarchyPanel.h"
 
+#include "Chimera/Renderer/EditorCamera.h"
+
 namespace Chimera
 {
 	class EditorLayer : public Layer
@@ -18,6 +20,11 @@ namespace Chimera
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& e) override;
 	private:
+		bool OnKeyPressed(KeyPressedEvent& e);
+		void NewScene();
+		void OpenScene();
+		void SaveSceneAs();
+
 		OrthographicCameraController m_CameraController;
 
 		//Temp
@@ -37,8 +44,10 @@ namespace Chimera
 		Entity m_SecondCamera;
 
 		bool m_PrimaryCamera = true;
+		EditorCamera m_EditorCamera;
 
+		int m_GizmoType = -1;
 		//Panels
-		SceneHierarchyPanel m_Panel;
+		SceneHierarchyPanel m_SceneHierarchyPanel;
 	};
 }

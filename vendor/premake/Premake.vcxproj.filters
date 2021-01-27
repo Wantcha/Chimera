@@ -16,8 +16,14 @@
     <Filter Include="..\Chimera\vendor\Glad">
       <UniqueIdentifier>{6D422A19-593C-536B-42A9-E97B2E42B9D7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="..\Chimera\vendor\ImGuizmo">
+      <UniqueIdentifier>{E6C0763A-D2D0-220B-3B8A-872927B911A4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="..\Chimera\vendor\imgui">
       <UniqueIdentifier>{B079DA40-1CB1-22D8-25BB-86FB917149D1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\Chimera\vendor\yaml-cpp">
+      <UniqueIdentifier>{38B5F342-24C5-9F13-8D7E-043279AD8EAC}</UniqueIdentifier>
     </Filter>
     <Filter Include="..\Chimera-Editor">
       <UniqueIdentifier>{1D5D86CF-8973-8465-D2EA-0F873E4055ED}</UniqueIdentifier>
@@ -39,8 +45,14 @@
     <None Include="..\..\Chimera\vendor\Glad\premake5.lua">
       <Filter>..\Chimera\vendor\Glad</Filter>
     </None>
+    <None Include="..\..\Chimera\vendor\ImGuizmo\premake5.lua">
+      <Filter>..\Chimera\vendor\ImGuizmo</Filter>
+    </None>
     <None Include="..\..\Chimera\vendor\imgui\premake5.lua">
       <Filter>..\Chimera\vendor\imgui</Filter>
+    </None>
+    <None Include="..\..\Chimera\vendor\yaml-cpp\premake5.lua">
+      <Filter>..\Chimera\vendor\yaml-cpp</Filter>
     </None>
     <None Include="..\..\Sandbox\premake5.lua">
       <Filter>..\Sandbox</Filter>

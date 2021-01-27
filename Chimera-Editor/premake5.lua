@@ -19,7 +19,8 @@ project "Chimera-Editor"
 		"%{wks.location}/Chimera/src",
 		"%{wks.location}/Chimera/vendor",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links

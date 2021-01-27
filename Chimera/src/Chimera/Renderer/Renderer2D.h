@@ -5,6 +5,7 @@
 #include "SubTexture2D.h"
 
 #include "Chimera/Renderer/Camera.h"
+#include "Chimera/Renderer/EditorCamera.h"
 
 namespace Chimera
 {
@@ -15,7 +16,8 @@ namespace Chimera
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const OrthographicCamera& camera);
+		static void BeginScene(const OrthographicCamera& camera); // Temp
+		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const Camera& camera, const glm::mat4& transform);
 		static void EndScene();
 		static void Flush();
@@ -51,6 +53,7 @@ namespace Chimera
 		static void ResetStats();
 
 	private:
-		static void FlushAndReset();
+		static void StartBatch();
+		static void NextBatch();
 	};
 }
