@@ -16,6 +16,7 @@ namespace Chimera
 		glm::vec2 TexCoord;
 		float TexIndex;
 		float TilingFactor;
+		int EntityID;
 	};
 
 	struct Renderer2DData
@@ -57,7 +58,8 @@ namespace Chimera
 			{ ShaderDataType::Float4, "a_Color" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 			{ ShaderDataType::Float, "a_TexIndex" },
-			{ ShaderDataType::Float, "a_TilingFactor" }
+			{ ShaderDataType::Float, "a_TilingFactor" },
+			{ ShaderDataType::Float, "a_EntityID" }
 		});
 
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
@@ -175,45 +177,45 @@ namespace Chimera
 		StartBatch();
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+	void Renderer2D::DrawQuad(int entityID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, color);
+		DrawQuad(entityID, { position.x, position.y, 0.0f }, size, color);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	void Renderer2D::DrawQuad(int entityID, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		CM_PROFILE_FUNCTION();
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, color);
+		DrawQuad(entityID, transform, color);
 	}
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawQuad(int entityID, const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
+		DrawQuad(entityID, { position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawQuad(int entityID, const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, texture, tilingFactor, tintColor);
+		DrawQuad(entityID, transform, texture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawQuad(int entityID, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, subtexture, tilingFactor, tintColor);
+		DrawQuad(entityID, { position.x, position.y, 0.0f }, size, subtexture, tilingFactor, tintColor);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawQuad(int entityID, const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
 	{
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, subtexture, tilingFactor, tintColor);
+		DrawQuad(entityID, transform, subtexture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::DrawQuad(int entityID, const glm::mat4& transform, const glm::vec4& color)
 	{
 		CM_PROFILE_FUNCTION();
 		constexpr size_t quadVertexCount = 4;
@@ -231,6 +233,7 @@ namespace Chimera
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = 0;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -239,7 +242,7 @@ namespace Chimera
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawQuad(int entityID, const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
 	{
 		CM_PROFILE_FUNCTION();
 
@@ -282,6 +285,7 @@ namespace Chimera
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 		s_Data.QuadIndexCount += 6;
@@ -289,7 +293,7 @@ namespace Chimera
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawQuad(int entityID, const glm::mat4& transform, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
 	{
 		CM_PROFILE_FUNCTION();
 
@@ -333,6 +337,7 @@ namespace Chimera
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 		s_Data.QuadIndexCount += 6;
@@ -340,11 +345,11 @@ namespace Chimera
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
+	void Renderer2D::DrawRotatedQuad(int entityID, const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
+		DrawRotatedQuad(entityID, { position.x, position.y, 0.0f }, size, rotation, color);
 	}
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
+	void Renderer2D::DrawRotatedQuad(int entityID, const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
 		/*constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
@@ -358,85 +363,27 @@ namespace Chimera
 			* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, color);
-
-	/*	for (size_t i = 0; i < quadVertexCount; i++)
-		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = 0;
-			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
-			s_Data.QuadVertexBufferPtr++;
-		}
-
-		s_Data.QuadIndexCount += 6;
-
-		s_Data.Stats.QuadCount++;*/
+		DrawQuad(entityID, transform, color);
 	}
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawRotatedQuad(int entityID, const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
+		DrawRotatedQuad(entityID, { position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
 	}
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawRotatedQuad(int entityID, const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4 tintColor)
 	{
-		/*constexpr size_t quadVertexCount = 4;
-		constexpr glm::vec2 textureCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} };
-
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
-		{
-			FlushAndReset();
-		}
-
-		const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-		float textureIndex = 0.0f;
-
-		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
-		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
-			{
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
-				FlushAndReset();
-
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			++s_Data.TextureSlotIndex;
-		}*/
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, texture, tilingFactor, tintColor);
-
-		/*for (size_t i = 0; i < quadVertexCount; i++)
-		{
-			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
-			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
-			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
-			s_Data.QuadVertexBufferPtr++;
-		}
-
-		s_Data.QuadIndexCount += 6;
-
-		s_Data.Stats.QuadCount++;*/
+		DrawQuad(entityID, transform, texture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawRotatedQuad(int entityID, const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, subtexture, tilingFactor, tintColor);
+		DrawRotatedQuad(entityID, { position.x, position.y, 0.0f }, size, rotation, subtexture, tilingFactor, tintColor);
 	}
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
+	void Renderer2D::DrawRotatedQuad(int entityID, const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<SubTexture2D>& subtexture, float tilingFactor, const glm::vec4 tintColor)
 	{
 		/*constexpr size_t quadVertexCount = 4;
 		const glm::vec2* textureCoords = subtexture->GetTexCoords();
@@ -474,7 +421,7 @@ namespace Chimera
 			* glm::rotate(glm::mat4(1.0f), rotation, { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, subtexture, tilingFactor, tintColor);
+		DrawQuad(entityID, transform, subtexture, tilingFactor, tintColor);
 
 		/*for (size_t i = 0; i < quadVertexCount; i++)
 		{

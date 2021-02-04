@@ -38,12 +38,13 @@ namespace Chimera
 		for (auto entity : group)
 		{
 			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+			auto currentEntity = entt::to_entity(m_Registry, transform);
+			Renderer2D::DrawQuad((int)currentEntity, transform.GetTransform(), sprite.Color);
 		}
 
 		Renderer2D::EndScene();
 	}
-	void Scene::OnUpdateRuntime(Timestep ts)
+	/*void Scene::OnUpdateRuntime(Timestep ts)
 	{
 		//Update scripts
 		{
@@ -92,7 +93,7 @@ namespace Chimera
 
 			Renderer2D::EndScene();
 		}
-	}
+	}*/
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;

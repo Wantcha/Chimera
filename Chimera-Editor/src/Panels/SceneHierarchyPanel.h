@@ -18,6 +18,13 @@ namespace Chimera
 		void OnImGuiRender();
 
 		Entity GetSelectedEntity() const { return m_SelectionContext; }
+		void SetSelectedEntity(int selectionID) { 
+			if (selectionID >= 0 && selectionID < m_Context->m_Registry.size())
+			{
+				Entity entity = { m_Context->m_Registry.data()[selectionID], m_Context.get() }; 
+				m_SelectionContext = entity;
+			}
+			 }
 	private:
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);

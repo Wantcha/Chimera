@@ -54,3 +54,12 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
+  - Entity: 12837192831273
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Position: [6.61644793, 2.30756426, 1.28215587]
+      Rotation: [0, 0, -2.98018003]
+      Scale: [0.999997973, 0.999997973, 2.90998888]
+    SpriteRendererComponent:
+      Color: [0.84446913, 1, 0.0548523068, 1]
