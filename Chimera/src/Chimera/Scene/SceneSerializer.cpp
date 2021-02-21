@@ -10,6 +10,27 @@
 namespace YAML
 {
 	template<>
+	struct convert<glm::vec2>
+	{
+		static Node encode(const glm::vec2& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			return node;
+		}
+		static bool decode(const Node& node, glm::vec2& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 2)
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			return true;
+		}
+	};
+
+	template<>
 	struct convert<glm::vec3>
 	{
 		static Node encode(const glm::vec3& rhs)
@@ -61,6 +82,13 @@ namespace YAML
 namespace Chimera
 {
 
+	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
+	}
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
 	{
 		out << YAML::Flow;
@@ -84,15 +112,16 @@ namespace Chimera
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap;// Entity
-		out << YAML::Key << "Entity"<< YAML::Value << "12837192831273"; //Entity ID
+		out << YAML::Key << "Entity"<< YAML::Value << (uint32_t)entity; //Entity ID
 
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap;
 
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
-			out << YAML::Key << "Tag" << YAML::Value << tag;
+			auto& tag = entity.GetComponent<TagComponent>();
+			out << YAML::Key << "Tag" << YAML::Value << tag.Tag;
+			out << YAML::Key << "Enabled" << YAML::Value << tag.Enabled;
 			out << YAML::EndMap;
 		}
 
@@ -140,6 +169,66 @@ namespace Chimera
 
 			auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<RigidBody2DComponent>())
+		{
+			out << YAML::Key << "RigidBody2DComponent";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "RigidBody2D" << YAML::Value;
+			out << YAML::BeginMap;
+
+			auto& rb = entity.GetComponent<RigidBody2DComponent>().RigidBody;
+			out << YAML::Key << "BodyType" << YAML::Value << (int)rb.GetBodyType();
+			out << YAML::Key << "GravityScale" << YAML::Value << rb.GetGravityScale();
+			out << YAML::Key << "DiscreteCollision" << YAML::Value << rb.IsDiscreteCollision();
+			out << YAML::Key << "FixedRotation" << YAML::Value << rb.IsFixedRotation();
+
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<BoxCollider2DComponent>())
+		{
+			out << YAML::Key << "BoxCollider2DComponent";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "BoxCollider2D" << YAML::Value;
+			out << YAML::BeginMap;
+
+			auto& box = entity.GetComponent<BoxCollider2DComponent>().BoxCollider;
+			glm::vec3 pos = { box.GetCenter().x, box.GetCenter().y, 0.0f };
+			out << YAML::Key << "ColliderCenter" << YAML::Value << pos;
+			out << YAML::Key << "ColliderSize" << YAML::Value << box.GetSize();
+			out << YAML::Key << "Sensor" << YAML::Value << box.IsSensor();
+			out << YAML::Key << "Density" << YAML::Value << box.GetDensity();
+			out << YAML::Key << "Friction" << YAML::Value << box.GetFriction();
+			out << YAML::Key << "Bounciness" << YAML::Value << box.GetBounciness();
+
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<CircleCollider2DComponent>())
+		{
+			out << YAML::Key << "CircleCollider2DComponent";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "CircleCollider2D" << YAML::Value;
+			out << YAML::BeginMap;
+
+			auto& cc = entity.GetComponent<CircleCollider2DComponent>().CircleCollider;
+			glm::vec3 pos = { cc.GetCenter().x, cc.GetCenter().y, 0.0f };
+			out << YAML::Key << "ColliderCenter" << YAML::Value << pos;
+			out << YAML::Key << "ColliderRadius" << YAML::Value << cc.GetRadius();
+			out << YAML::Key << "Sensor" << YAML::Value << cc.IsSensor();
+			out << YAML::Key << "Density" << YAML::Value << cc.GetDensity();
+			out << YAML::Key << "Friction" << YAML::Value << cc.GetFriction();
+			out << YAML::Key << "Bounciness" << YAML::Value << cc.GetBounciness();
+
+			out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 
@@ -191,13 +280,18 @@ namespace Chimera
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
 				std::string name;
+				bool enabled;
 				auto tagComponent = entity["TagComponent"];
 				if (tagComponent)
+				{
 					name = tagComponent["Tag"].as<std::string>();
-
+					enabled = tagComponent["Enabled"].as<bool>();
+				}
+					
 				CM_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				deserializedEntity.GetComponent<TagComponent>().Enabled = enabled;
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
@@ -233,6 +327,44 @@ namespace Chimera
 				{
 					auto& src = deserializedEntity.AddComponent< SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+				}
+
+				auto rigiBody2DComponent = entity["RigidBody2DComponent"];
+				if (rigiBody2DComponent)
+				{
+					auto& rb = deserializedEntity.AddComponent<RigidBody2DComponent>().RigidBody;
+					auto& rbProps = rigiBody2DComponent["RigidBody2D"];
+
+					rb.SetBodyType((RigidBody2D::Body2DType)rbProps["BodyType"].as<int>());
+					rb.SetGravityScale(rbProps["GravityScale"].as<float>());
+					rb.SetDiscreteCollision(rbProps["DiscreteCollision"].as<bool>());
+					rb.SetFixedRotation(rbProps["FixedRotation"].as<bool>());
+				}
+
+				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
+				if (boxCollider2DComponent)
+				{
+					auto& box = deserializedEntity.AddComponent<BoxCollider2DComponent>().BoxCollider;
+					auto& boxProps = boxCollider2DComponent["BoxCollider2D"];
+					
+					box.SetCenter(boxProps["ColliderCenter"].as<glm::vec3>());
+					box.SetSize(boxProps["ColliderSize"].as<glm::vec2>());
+					box.SetDensity(boxProps["Density"].as<float>());
+					box.SetFriction(boxProps["Friction"].as<float>());
+					box.SetBounciness(boxProps["Bounciness"].as<float>());
+				}
+
+				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
+				if (circleCollider2DComponent)
+				{
+					auto& cc = deserializedEntity.AddComponent<CircleCollider2DComponent>().CircleCollider;
+					auto& ccProps = circleCollider2DComponent["CircleCollider2D"];
+
+					cc.SetCenter(ccProps["ColliderCenter"].as<glm::vec3>());
+					cc.SetRadius(ccProps["ColliderRadius"].as<float>());
+					cc.SetDensity(ccProps["Density"].as<float>());
+					cc.SetFriction(ccProps["Friction"].as<float>());
+					cc.SetBounciness(ccProps["Bounciness"].as<float>());
 				}
 			}
 		}

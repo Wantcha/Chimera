@@ -19,6 +19,9 @@
     <Filter Include="..\Chimera\vendor\ImGuizmo">
       <UniqueIdentifier>{E6C0763A-D2D0-220B-3B8A-872927B911A4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="..\Chimera\vendor\box2d">
+      <UniqueIdentifier>{94265D40-005E-A5D7-0968-09FB751ECCD0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="..\Chimera\vendor\imgui">
       <UniqueIdentifier>{B079DA40-1CB1-22D8-25BB-86FB917149D1}</UniqueIdentifier>
     </Filter>
@@ -30,6 +33,9 @@
     </Filter>
     <Filter Include="..\Sandbox">
       <UniqueIdentifier>{3F7B6B1D-2B33-AD6A-943A-86C68011485B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\temp">
+      <UniqueIdentifier>{C6AC9747-328C-16E3-3BA4-A1B9A7027D44}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +54,9 @@
     <None Include="..\..\Chimera\vendor\ImGuizmo\premake5.lua">
       <Filter>..\Chimera\vendor\ImGuizmo</Filter>
     </None>
+    <None Include="..\..\Chimera\vendor\box2d\premake5.lua">
+      <Filter>..\Chimera\vendor\box2d</Filter>
+    </None>
     <None Include="..\..\Chimera\vendor\imgui\premake5.lua">
       <Filter>..\Chimera\vendor\imgui</Filter>
     </None>
@@ -59,6 +68,9 @@
     </None>
     <None Include="..\..\premake5.lua">
       <Filter>..</Filter>
+    </None>
+    <None Include="..\..\temp\premake5.lua">
+      <Filter>..\temp</Filter>
     </None>
     <None Include="premake5.lua" />
   </ItemGroup>

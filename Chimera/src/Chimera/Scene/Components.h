@@ -5,14 +5,20 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include "Chimera/Physics/BoxCollider2D.h"
+#include "Chimera/Physics/RigidBody2D.h"
+#include "Chimera/Physics/CircleCollider2D.h"
+
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
+#include "Chimera/Renderer/Texture.h"
 
 namespace Chimera
 {
 	struct TagComponent
 	{
 		std::string Tag;
+		bool Enabled = true;
 
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
@@ -42,11 +48,19 @@ namespace Chimera
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
+		Ref<Texture2D> SpriteTexture = Texture2D::Create(1, 1);
 
-		SpriteRendererComponent() = default;
+		SpriteRendererComponent()
+		{
+			uint32_t whiteTextureData = 0xffffffff;
+			SpriteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		};
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color)
-			: Color(color) {}
+			: Color(color) {
+			uint32_t whiteTextureData = 0xffffffff;
+			SpriteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		}
 	};
 
 	struct CameraComponent
@@ -57,6 +71,45 @@ namespace Chimera
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+	};
+
+	struct BoxCollider2DComponent
+	{
+		BoxCollider2D BoxCollider;
+		//bool EditMode = false;
+
+		BoxCollider2DComponent() = default;
+		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
+		BoxCollider2DComponent(b2Body* body, float width, float height)
+			: BoxCollider( body, width, height ) {}
+	};
+
+	struct CircleCollider2DComponent
+	{
+		CircleCollider2D CircleCollider;
+
+		CircleCollider2DComponent() = default;
+		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
+		CircleCollider2DComponent(b2Body* body, float radius)
+			: CircleCollider(body, radius) {}
+	};
+
+	struct RigidBody2DComponent
+	{
+		RigidBody2D RigidBody;
+
+		RigidBody2DComponent() = default;
+		RigidBody2DComponent(const RigidBody2DComponent&) = default;
+		RigidBody2DComponent(b2Body* body)
+			: RigidBody(body) {}
+	};
+
+	struct Body2DComponent
+	{
+		b2Body* Body;
+		int ColliderCount = 0;
+		Body2DComponent() = default;
+		Body2DComponent(const Body2DComponent&) = default;
 	};
 
 	struct NativeScriptComponent

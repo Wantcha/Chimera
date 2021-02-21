@@ -77,7 +77,7 @@
       <PrecompiledHeaderFile>cmpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;CM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -99,7 +99,7 @@
       <PrecompiledHeaderFile>cmpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;CM_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -124,7 +124,7 @@
       <PrecompiledHeaderFile>cmpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;CM_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -163,6 +163,12 @@
     <ClInclude Include="src\Chimera\Events\MouseEvent.h" />
     <ClInclude Include="src\Chimera\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Chimera\Math\Math.h" />
+    <ClInclude Include="src\Chimera\Physics\BoxCollider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\CircleCollider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\Collider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\ContactListener2D.h" />
+    <ClInclude Include="src\Chimera\Physics\Physics2DDebugDraw.h" />
+    <ClInclude Include="src\Chimera\Physics\RigidBody2D.h" />
     <ClInclude Include="src\Chimera\Renderer\Buffer.h" />
     <ClInclude Include="src\Chimera\Renderer\Camera.h" />
     <ClInclude Include="src\Chimera\Renderer\EditorCamera.h" />
@@ -613,6 +619,12 @@
     <ClCompile Include="src\Chimera\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chimera\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chimera\Math\Math.cpp" />
+    <ClCompile Include="src\Chimera\Physics\BoxCollider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\CircleCollider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\Collider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\ContactListener2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\Physics2DDebugDraw.cpp" />
+    <ClCompile Include="src\Chimera\Physics\RigidBody2D.cpp" />
     <ClCompile Include="src\Chimera\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Chimera\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Chimera\Renderer\Framebuffer.cpp" />
@@ -660,6 +672,9 @@
     </ProjectReference>
     <ProjectReference Include="vendor\yaml-cpp\yaml-cpp.vcxproj">
       <Project>{88F1A057-74BE-FB62-9DD7-E90A890331F1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vendor\box2d\box2d.vcxproj">
+      <Project>{E4442B0F-5059-53C0-19DB-F61F85AE4FF1}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

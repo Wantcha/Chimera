@@ -82,10 +82,12 @@
     <None Include="..\..\Chimera\vendor\GLFW\premake5.lua" />
     <None Include="..\..\Chimera\vendor\Glad\premake5.lua" />
     <None Include="..\..\Chimera\vendor\ImGuizmo\premake5.lua" />
+    <None Include="..\..\Chimera\vendor\box2d\premake5.lua" />
     <None Include="..\..\Chimera\vendor\imgui\premake5.lua" />
     <None Include="..\..\Chimera\vendor\yaml-cpp\premake5.lua" />
     <None Include="..\..\Sandbox\premake5.lua" />
     <None Include="..\..\premake5.lua" />
+    <None Include="..\..\temp\premake5.lua" />
     <None Include="premake5.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

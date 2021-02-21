@@ -19,6 +19,9 @@
     <Filter Include="src\Chimera\ImGui">
       <UniqueIdentifier>{3F35B7C0-AB4B-B556-F4C2-4078601886DE}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chimera\Math">
+      <UniqueIdentifier>{4EF69A0D-3AEF-B95F-6321-9FE44F79996B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chimera\Renderer">
       <UniqueIdentifier>{9B87CD76-8716-5740-3035-6B3B1CA367E6}</UniqueIdentifier>
     </Filter>
@@ -120,10 +123,16 @@
     <ClInclude Include="src\Chimera\ImGui\ImGuiLayer.h">
       <Filter>src\Chimera\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chimera\Math\Math.h">
+      <Filter>src\Chimera\Math</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chimera\Renderer\Buffer.h">
       <Filter>src\Chimera\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\Renderer\Camera.h">
+      <Filter>src\Chimera\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Renderer\EditorCamera.h">
       <Filter>src\Chimera\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\Renderer\Framebuffer.h">
@@ -1440,8 +1449,12 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chimera\Math\Math.h" />
-    <ClInclude Include="src\Chimera\Renderer\EditorCamera.h" />
+    <ClInclude Include="src\Chimera\Physics\Physics2DDebugDraw.h" />
+    <ClInclude Include="src\Chimera\Physics\BoxCollider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\RigidBody2D.h" />
+    <ClInclude Include="src\Chimera\Physics\Collider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\CircleCollider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\ContactListener2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chimera\Core\Application.cpp">
@@ -1462,7 +1475,13 @@
     <ClCompile Include="src\Chimera\ImGui\ImGuiLayer.cpp">
       <Filter>src\Chimera\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chimera\Math\Math.cpp">
+      <Filter>src\Chimera\Math</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chimera\Renderer\Buffer.cpp">
+      <Filter>src\Chimera\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Renderer\EditorCamera.cpp">
       <Filter>src\Chimera\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Chimera\Renderer\Framebuffer.cpp">
@@ -1549,7 +1568,11 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chimera\Math\Math.cpp" />
-    <ClCompile Include="src\Chimera\Renderer\EditorCamera.cpp" />
+    <ClCompile Include="src\Chimera\Physics\Physics2DDebugDraw.cpp" />
+    <ClCompile Include="src\Chimera\Physics\BoxCollider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\RigidBody2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\Collider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\CircleCollider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\ContactListener2D.cpp" />
   </ItemGroup>
 </Project>

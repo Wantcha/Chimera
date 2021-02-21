@@ -1,0 +1,38 @@
+Scene: Untitled
+Entities:
+  - Entity: 1
+    TagComponent:
+      Tag: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [0, 1.62075269, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.50999999, 0.50999999, 0.50999999]
+    SpriteRendererComponent:
+      Color: [0.774336278, 0.328921616, 0.328921616, 1]
+    BoxCollider2DComponent:
+      BoxCollider2D:
+        ColliderCenter: [0, 0, 0]
+        ColliderSize: [0.50999999, 0.50999999]
+        Sensor: false
+        Density: 1
+        Friction: 0.300000012
+        Bounciness: 0.100000001
+  - Entity: 0
+    TagComponent:
+      Tag: Ground
+      Enabled: true
+    TransformComponent:
+      Position: [0, -1.19545603, 0]
+      Rotation: [0, 0, 0]
+      Scale: [6.12626123, 0.298854619, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+    BoxCollider2DComponent:
+      BoxCollider2D:
+        ColliderCenter: [0, 0, 0]
+        ColliderSize: [6.12626123, 0.298854619]
+        Sensor: false
+        Density: 1
+        Friction: 0.300000012
+        Bounciness: 0.100000001

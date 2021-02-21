@@ -5,8 +5,8 @@
 #include "imgui.h"
 
 #define IMGUI_IMPL_API
-#include "examples/imgui_impl_glfw.h"
-#include "examples/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #include <GLFW/glfw3.h>
 #include "Chimera/Core/Application.h"
@@ -40,8 +40,8 @@ void Chimera::ImGuiLayer::OnAttach()
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNotTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
-    io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Bold.ttf", 16.0f);
-    io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Regular.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Bold.ttf", 15.0f);
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("assets/fonts/roboto/Roboto-Regular.ttf", 15.0f);
 
     ImGui::StyleColorsDark();
 
@@ -83,8 +83,8 @@ void Chimera::ImGuiLayer::OnEvent(Event& e)
 
 void Chimera::ImGuiLayer::OnImGuiRender()
 {
-    /*static bool show = true;
-    ImGui::ShowDemoWindow(&show);*/
+    static bool show = true;
+    ImGui::ShowDemoWindow(&show);
 }
 
 void Chimera::ImGuiLayer::Begin()

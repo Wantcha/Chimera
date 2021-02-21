@@ -8,6 +8,9 @@ namespace Chimera
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		:m_Path(path)
 	{
+		if (m_RendererID)
+			glDeleteTextures(1, &m_RendererID);
+
 		CM_PROFILE_FUNCTION();
 
 		int width, height, channels;
@@ -56,6 +59,9 @@ namespace Chimera
 		:m_Width(width), m_Height(height)
 	{
 		CM_PROFILE_FUNCTION();
+
+		if (m_RendererID)
+			glDeleteTextures(1, &m_RendererID);
 
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA; //how to store the data and how to interpret it

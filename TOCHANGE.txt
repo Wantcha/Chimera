@@ -1,4 +1,6 @@
 1. Make logging into its own static object
 2. Change timestep in Update to be just a float deltaTime, or make Time a separate static class
 3. Change submodules to be indepenent from Cherno's repos
-4. Draw rotated quads without separate function
+//4. Draw rotated quads without separate function
+5. Load textures into sprites
+6. Change tags to be names, and make a separate tag system

@@ -39,7 +39,8 @@ project "Chimera"
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
-		"%{IncludeDir.ImGuizmo}"
+		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.box2d}"
 	}
 
 	links
@@ -48,7 +49,8 @@ project "Chimera"
 		"Glad",
 		"ImGui",
 		"yaml-cpp",
-		"opengl32.lib"
+		"box2d",
+		"opengl32.lib",
 	}
 
 	filter "files:vendor/ImGuizmo/**.cpp"

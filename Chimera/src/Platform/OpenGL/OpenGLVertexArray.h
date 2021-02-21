@@ -20,6 +20,7 @@ namespace Chimera
 		virtual const Ref<IndexBuffer>& getIndexBuffer() const override { return m_IndexBuffer; };
 	private:
 		uint32_t m_RendererID;
+		uint32_t m_VertexBufferIndex = 0;
 		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
 		Ref<IndexBuffer> m_IndexBuffer;
 	};

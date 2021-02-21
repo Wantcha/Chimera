@@ -72,6 +72,30 @@ namespace Chimera
 
 			return false;
 		}
+
+		static GLenum ChimeraFBTextureFormatToGL(FramebufferTextureFormat format)
+		{
+			switch (format)
+			{
+				case FramebufferTextureFormat::RGBA8: return GL_RGBA8;
+				case FramebufferTextureFormat::RED_INTEGER: return GL_RED_INTEGER;
+				case FramebufferTextureFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
+			}
+			CM_CORE_ASSERT(false, "");
+			return 0;
+		}
+
+		/*static GLenum GLDataType(FramebufferTextureFormat format)
+		{
+			switch (format)
+			{
+			case FramebufferTextureFormat::RGBA8: return GL_UNSIGNED_BYTE;
+			case FramebufferTextureFormat::RED_INTEGER: return GL_INT;
+			//case FramebufferTextureFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
+			}
+			CM_CORE_ASSERT(false, "");
+			return 0;
+		}*/
 	}
 
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec)
@@ -188,5 +212,13 @@ namespace Chimera
 		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
 
 		return pixelData;
+	}
+	void OpenGLFramebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	{
+		CM_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "");
+
+		auto& spec = m_ColorAttachmentSpecs[attachmentIndex];
+
+		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::ChimeraFBTextureFormatToGL(spec.TextureFormat), GL_INT, &value);
 	}
 }

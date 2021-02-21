@@ -2,8 +2,10 @@
 
 #include "Chimera.h"
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/AssetManagerPanel.h"
 
 #include "Chimera/Renderer/EditorCamera.h"
+
 
 namespace Chimera
 {
@@ -50,5 +52,6 @@ namespace Chimera
 		int m_GizmoType = -1;
 		//Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		AssetManagerPanel m_AssetManagerPanel;
 	};
 }

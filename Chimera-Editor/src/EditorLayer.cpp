@@ -8,10 +8,10 @@
 
 #include "ImGuizmo.h"
 #include "Chimera/Math/Math.h"
+#include "Chimera/Physics/ContactListener2D.h"
 
 namespace Chimera
 {
-
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
 	{
@@ -76,11 +76,17 @@ namespace Chimera
 				if (Input::IsKeyPressed(Key::S))
 					position.y -= speed * ts;
 			}
+
+			void OnCollisionEnter2D(Contact2D contact)
+			{
+				CM_CORE_WARN("COLLISION");
+			}
 		};
 
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();*/
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_AssetManagerPanel.Init();
 	}
 
 	void EditorLayer::OnDetach()
@@ -114,6 +120,8 @@ namespace Chimera
 		m_Framebuffer->Bind();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 		RenderCommand::Clear();
+
+		m_Framebuffer->ClearAttachment(1, -1);
 
 		{
 			//static float rotation = 0.0f;
@@ -150,7 +158,7 @@ namespace Chimera
 
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_SceneHierarchyPanel.SetSelectedEntity(pixelData);
-			//CM_CORE_INFO("{0}", pixelData);
+			CM_CORE_INFO("{0}", pixelData);
 			//CM_CORE_INFO("{0}, {1}", mouseX, mouseY);
 		}
 
@@ -328,11 +336,25 @@ namespace Chimera
 				tc.Position = position;
 				tc.Rotation += deltaRotation;
 				tc.Scale = scale;
+
+				/*if (selectedEntity.HasComponent<Body2DComponent>())
+				{
+					auto& rb = selectedEntity.GetComponent<Body2DComponent>().Body;
+					//rb->SetTransform({ position.x, position.y }, rb->GetTransform().q.GetAngle() + deltaRotation.z);
+					if (selectedEntity.HasComponent<BoxCollider2DComponent>())
+					{
+						BoxCollider2D& collider = selectedEntity.GetComponent<BoxCollider2DComponent>().BoxCollider;
+						collider.SetSize(scale.x, scale.y);
+					}
+				}*/
 			}
 		}
 
 
 		ImGui::End();
+
+		m_AssetManagerPanel.OnImGuiRender();
+
 		ImGui::PopStyleVar(ImGuiStyleVar_WindowPadding);
 
 		ImGui::End();

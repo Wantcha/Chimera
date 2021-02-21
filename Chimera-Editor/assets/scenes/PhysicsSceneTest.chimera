@@ -1,0 +1,44 @@
+Scene: Untitled
+Entities:
+  - Entity: 1
+    TagComponent:
+      Tag: Sprite2
+      Enabled: true
+    TransformComponent:
+      Position: [1.38659406, 1.06930137, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+    RigidBody2DComponent:
+      RigidBody2D:
+        BodyType: 1
+        GravityScale: 1.70000005
+        DiscreteCollision: false
+        FixedRotation: false
+    CircleCollider2DComponent:
+      CircleCollider2D:
+        ColliderCenter: [0, 0, 0]
+        ColliderRadius: 0.5
+        Sensor: false
+        Density: 1
+        Friction: 0.300000012
+        Bounciness: 1
+  - Entity: 0
+    TagComponent:
+      Tag: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [-1.46662605, 1.29859579, 0]
+      Rotation: [0, 0, -0.777304769]
+      Scale: [1, 2.11283398, 1]
+    SpriteRendererComponent:
+      Color: [1, 0, 0, 1]
+    BoxCollider2DComponent:
+      BoxCollider2D:
+        ColliderCenter: [0, 0, 0]
+        ColliderSize: [1, 2.11283398]
+        Sensor: false
+        Density: 1
+        Friction: 0.300000012
+        Bounciness: 0.100000001

@@ -14,6 +14,12 @@ namespace Chimera
 	{
 		m_Context = context;
 		m_SelectionContext = {};
+
+		m_CurrentPath = fs::current_path();
+		m_CurrentPath /= "assets";
+		m_IsCurrentPathDir = true;
+
+		m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
 	}
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
@@ -34,9 +40,27 @@ namespace Chimera
 		// Right-click on blank space
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
-			if (ImGui::MenuItem("Create Empty Entity"))
+			if (ImGui::BeginMenu("Create..."))
 			{
-				m_Context->CreateEntity("Empty Entity");
+				if (ImGui::MenuItem("Empty Entity"))
+				{
+					m_Context->CreateEntity("Empty Entity");
+				}
+
+				else if (ImGui::MenuItem("Sprite"))
+				{
+					Entity entity = { m_Context->CreateEntity("Sprite"), m_Context.get() };
+					entity.AddComponent<SpriteRendererComponent>();
+
+				}
+
+				else if (ImGui::MenuItem("Camera"))
+				{
+					Entity entity = { m_Context->CreateEntity("Camera"), m_Context.get() };
+					entity.AddComponent<CameraComponent>();
+
+				}
+				ImGui::EndMenu();
 			}
 			ImGui::EndPopup();
 		}
@@ -60,6 +84,8 @@ namespace Chimera
 
 		if (ImGui::IsItemClicked())
 		{
+			//if (m_SelectionContext.HasComponent<BoxCollider2DComponent>())
+			m_Context->m_EditColliders = false;
 			m_SelectionContext = entity;
 		}
 
@@ -80,6 +106,14 @@ namespace Chimera
 
 		if (entityDeleted)
 		{
+			/*if (entity.HasComponent<Body2DComponent>())
+			{
+				Entity* e = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
+				delete e;
+				m_Context->m_World->DestroyBody(entity.GetComponent<Body2DComponent>().Body);
+			}*/
+				
+
 			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity)
 				m_SelectionContext = {};
@@ -116,7 +150,7 @@ namespace Chimera
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.25f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##X", &values.x, 0.25f, 0.0f, 0.0f, "%.3f");
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -131,7 +165,7 @@ namespace Chimera
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.25f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##Y", &values.y, 0.25f, 0.0f, 0.0f, "%.3f");
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -145,7 +179,7 @@ namespace Chimera
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.25f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##Z", &values.z, 0.25f, 0.0f, 0.0f, "%.3f");
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -202,6 +236,10 @@ namespace Chimera
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			bool& enabled = entity.GetComponent<TagComponent>().Enabled;
+
+			ImGui::Checkbox("##Enabled", &enabled);
+			ImGui::SameLine();
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
@@ -216,7 +254,7 @@ namespace Chimera
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);
 
-		if (ImGui::Button("Add Component"))
+		if (ImGui::Button("Add..."))
 			ImGui::OpenPopup("AddComponent");
 
 		if (ImGui::BeginPopup("AddComponent"))
@@ -232,18 +270,36 @@ namespace Chimera
 				ImGui::CloseCurrentPopup();
 			}
 
+			if (ImGui::MenuItem("Box Collider 2D"))
+			{
+				m_SelectionContext.AddComponent<BoxCollider2DComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("Circle Collider 2D"))
+			{
+				m_SelectionContext.AddComponent<CircleCollider2DComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("Rigid Body 2D"))
+			{
+				m_SelectionContext.AddComponent<RigidBody2DComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
 			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
 		//ImGui::Separator();
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
-		{
-				DrawVec3Control("Position", component.Position);
+		DrawComponent<TransformComponent>("Transform", entity, [&](auto& component)
+		{	
 				glm::vec3 rotation = glm::degrees(component.Rotation);
+				DrawVec3Control("Position", component.Position);
+
 				DrawVec3Control("Rotation", rotation);
 				component.Rotation = glm::radians(rotation);
 				DrawVec3Control("Scale", component.Scale, 1.0f);
+				
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
@@ -306,9 +362,230 @@ namespace Chimera
 				}
 		});
 
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
 		{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				ImGui::Text("Texture");
+				ImGui::SameLine();
+
+				Ref<Texture2D>& tex = component.SpriteTexture;
+				std::string outPath = "";
+				ImGui::Image(reinterpret_cast<void*>(tex->GetRendererID()), ImVec2{ 30, 30 }, ImVec2{ 0,1 }, ImVec2{ 1,0 },
+					{ component.Color.x, component.Color.y, component.Color.z, component.Color.w });
+				ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+					ImGuiWindowFlags_AlwaysAutoResize;
+
+				bool isOpen = true;
+				if (ImGui::IsItemClicked())
+				{
+					ImGui::OpenPopup("SelectAsset");
+				}
+				if (ImGui::BeginPopupModal("SelectAsset", &isOpen, modalFlags))
+				{
+					//Auto resize text wrap to popup width.
+					ImGui::Spacing();
+					ImGui::PushItemWidth(-1);
+					ImGui::TextWrapped(m_CurrentPath.string().data());
+					ImGui::PopItemWidth();
+
+					//ImVec2 size = ImGui::GetContentRegionAvail();
+
+					ImGui::SameLine();
+
+					// Make the "Select" button look / act disabled if the current selection is a directory.
+					if (m_IsCurrentPathDir)
+					{
+
+						static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
+
+						ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
+
+						ImGui::Button("Select");
+
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+
+					}
+					else
+					{
+
+						if (ImGui::Button("Select"))
+						{
+							ImGui::CloseCurrentPopup();
+
+							outPath = m_CurrentPath.string();
+							component.SpriteTexture = Texture2D::Create(outPath);
+						}
+
+					}
+
+					//ImGui::Text(std::to_string(size.y / (style.ItemSpacing.y + ImGui::GetFontSize() )).c_str()  );
+					ImGui::PushItemWidth(-1);
+					if (ImGui::ListBox("##", &m_SelectionPath, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(), 5))
+					{
+						//Update current path to the selected list item.
+						m_CurrentPath = m_FilesInScope[m_SelectionPath].Path;
+						m_IsCurrentPathDir = fs::is_directory(m_CurrentPath);
+
+						//If the selection is a directory, repopulate the list with the contents of that directory.
+						if (m_IsCurrentPathDir) {
+							m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+						}
+
+					}
+					ImGui::PopItemWidth();
+
+					ImGui::EndPopup();
+				}
 		});
+
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [&](auto& component)
+			{
+				bool& edit = m_Context->m_EditColliders;
+
+				ImGui::Checkbox("Edit Collider", &edit);
+
+				BoxCollider2D& body = component.BoxCollider;
+
+				if (edit)
+				{
+					float boxPos[2] = { body.GetCenter().x, body.GetCenter().y };
+					if (ImGui::DragFloat2("Collider Center", boxPos, 0.05f))
+					{
+						body.SetCenter(boxPos[0], boxPos[1]);
+					}
+
+					float boxSize[2] = { body.GetWidth(), body.GetHeight() };
+					if (ImGui::DragFloat2("Collider Size", boxSize, 0.05f))
+					{
+						body.SetSize(boxSize[0], boxSize[1]);
+					}
+				}
+
+				bool sensor = body.IsSensor();
+				if (ImGui::Checkbox("Is Sensor", &sensor))
+				{
+					body.SetSensor(sensor);
+				}
+				ImGui::Separator();
+
+				float density = body.GetDensity();
+				if (ImGui::DragFloat("Density", &density, 0.25f, 0.0f, 100000.0f))
+				{
+					body.SetDensity(density);
+				}
+
+				float friction = body.GetFriction();
+				if (ImGui::DragFloat("Friction", &friction, 0.05f, 0.0f, 1.0f))
+				{
+					body.SetFriction(friction);
+				}
+
+				float bounciness = body.GetBounciness();
+				if (ImGui::DragFloat("Bounciness", &bounciness, 0.05f, 0.0f, 1.0f))
+				{
+					body.SetBounciness(bounciness);
+				}
+			});
+
+		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [&](auto& component)
+			{
+				bool& edit = m_Context->m_EditColliders;
+
+				ImGui::Checkbox("Edit Collider", &edit);
+
+				CircleCollider2D& body = component.CircleCollider;
+
+				if (edit)
+				{
+					float circlePos[2] = { body.GetCenter().x, body.GetCenter().y };
+					if (ImGui::DragFloat2("Center", circlePos, 0.05f))
+					{
+						body.SetCenter(circlePos[0], circlePos[1]);
+					}
+
+					float circleRadius = body.GetRadius();
+					if (ImGui::DragFloat("Radius", &circleRadius, 0.05f))
+					{
+						body.SetRadius(circleRadius);
+					}
+				}
+
+				bool sensor = body.IsSensor();
+				if (ImGui::Checkbox("Is Sensor", &sensor))
+				{
+					body.SetSensor(sensor);
+				}
+				ImGui::Separator();
+
+				float density = body.GetDensity();
+				if (ImGui::DragFloat("Density", &density, 0.25f, 0.0f, 100000.0f))
+				{
+					body.SetDensity(density);
+				}
+
+				float friction = body.GetFriction();
+				if (ImGui::DragFloat("Friction", &friction, 0.05f, 0.0f, 1.0f))
+				{
+					body.SetFriction(friction);
+				}
+
+				float bounciness = body.GetBounciness();
+				if (ImGui::DragFloat("Bounciness", &bounciness, 0.05f, 0.0f, 1.0f))
+				{
+					body.SetBounciness(bounciness);
+				}
+			});
+
+		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)
+			{
+				RigidBody2D& body = component.RigidBody;
+
+				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+				const char* currentBodyTypeString = bodyTypeStrings[(int)body.GetBodyType()];
+				if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+				{
+					for (int i = 0; i < 3; i++)
+					{
+						bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
+						if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
+						{
+							currentBodyTypeString = bodyTypeStrings[i];
+							body.SetBodyType((RigidBody2D::Body2DType)i);
+						}
+
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::EndCombo();
+				}
+
+				if (body.GetBodyType() != RigidBody2D::Body2DType::Static)
+				{
+					float gravityScale = body.GetGravityScale();
+					if (ImGui::DragFloat("Gravity Scale", &gravityScale, 0.05f))
+					{
+						body.SetGravityScale(gravityScale);
+					}
+
+					bool discrete = body.IsDiscreteCollision();
+					if (ImGui::Checkbox("Use Discrete Collision", &discrete))
+						body.SetDiscreteCollision(discrete);
+
+					bool fixed = body.IsFixedRotation();
+					if (ImGui::Checkbox("Has Fixed Rotation", &fixed))
+						body.SetFixedRotation(fixed);
+				}
+				
+			});
+
+		/*DrawComponent<Body2DComponent>("Body 2D Component", entity, [](auto& component)
+			{
+				
+			});*/
 	}
 }
