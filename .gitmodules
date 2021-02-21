@@ -7,3 +7,6 @@
 [submodule "Chimera/vendor/box2d"]
 	path = Chimera/vendor/box2d
 	url = https://github.com/Wantcha/box2d
+[submodule "Chimera/vendor/GLFW"]
+	path = Chimera/vendor/GLFW
+	url = https://github.com/Wantcha/glfw
