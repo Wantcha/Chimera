@@ -7,6 +7,3 @@
 [submodule "Chimera/vendor/glm"]
 	path = Chimera/vendor/glm
 	url = https://github.com/g-truc/glm
-[submodule "Chimera/vendor/box2d"]
-	path = Chimera/vendor/box2d
-	url = https://github.com/erincatto/box2d
