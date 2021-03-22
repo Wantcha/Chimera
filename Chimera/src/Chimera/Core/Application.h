@@ -39,6 +39,8 @@ namespace Chimera {
 	private:
 		bool OnWindowClosed(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnKeyReleased(KeyReleasedEvent& e);
 
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer; 
@@ -46,6 +48,7 @@ namespace Chimera {
 		bool m_Minimized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
+		const float m_FixedTimeStep = 1.0f/60.0f;
 	private:
 		static Application* s_Instance;
 	};

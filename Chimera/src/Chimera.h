@@ -33,3 +33,5 @@
 #include "Chimera/Scene/ScriptableEntity.h"
 #include "Chimera/Scene/Components.h"
 
+#include "Chimera/Assets/AssetManager.h"
+

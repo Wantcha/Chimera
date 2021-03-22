@@ -16,8 +16,8 @@
     <Filter Include="..\Chimera\vendor\Glad">
       <UniqueIdentifier>{6D422A19-593C-536B-42A9-E97B2E42B9D7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="..\Chimera\vendor\ImGuizmo">
-      <UniqueIdentifier>{E6C0763A-D2D0-220B-3B8A-872927B911A4}</UniqueIdentifier>
+    <Filter Include="..\Chimera\vendor\Lua">
+      <UniqueIdentifier>{57BB75CA-C327-31C5-8C1B-C922F846532D}</UniqueIdentifier>
     </Filter>
     <Filter Include="..\Chimera\vendor\box2d">
       <UniqueIdentifier>{94265D40-005E-A5D7-0968-09FB751ECCD0}</UniqueIdentifier>
@@ -51,8 +51,8 @@
     <None Include="..\..\Chimera\vendor\Glad\premake5.lua">
       <Filter>..\Chimera\vendor\Glad</Filter>
     </None>
-    <None Include="..\..\Chimera\vendor\ImGuizmo\premake5.lua">
-      <Filter>..\Chimera\vendor\ImGuizmo</Filter>
+    <None Include="..\..\Chimera\vendor\Lua\premake5.lua">
+      <Filter>..\Chimera\vendor\Lua</Filter>
     </None>
     <None Include="..\..\Chimera\vendor\box2d\premake5.lua">
       <Filter>..\Chimera\vendor\box2d</Filter>

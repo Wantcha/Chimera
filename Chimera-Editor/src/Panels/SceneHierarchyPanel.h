@@ -20,21 +20,7 @@ namespace Chimera
 		void OnImGuiRender();
 
 		Entity GetSelectedEntity() const { return m_SelectionContext; }
-		void SetSelectedEntity(int selectionID) { 
-			//m_Context->m_EditColliders = false;
-			if (selectionID >= 0)
-			{
-				Entity entity = { m_Context->m_Registry.data()[selectionID], m_Context.get() };
-				m_SelectionContext = entity;
-				//Entity* userData = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
-				//CM_CORE_WARN("{0}", (uint32_t)*userData);
-			}
-			else
-			{
-				//m_SelectionContext = {};
-			}
-
-			 }
+		void SetSelectedEntity(Entity entity);
 	private:
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);

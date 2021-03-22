@@ -3,6 +3,7 @@
 #include "imgui/imgui_internal.h"
 #include "Chimera/Scene/Components.h"
 #include <glm/gtc/type_ptr.hpp>
+#include "Chimera/Assets/AssetManager.h"
 
 namespace Chimera
 {
@@ -74,17 +75,20 @@ namespace Chimera
 		}
 		ImGui::End();
 	}
+	void SceneHierarchyPanel::SetSelectedEntity(Entity entity)
+	{
+		m_SelectionContext = entity;
+	}
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		auto& name = entity.GetComponent<TagComponent>().Name;
 
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
 		if (ImGui::IsItemClicked())
 		{
-			//if (m_SelectionContext.HasComponent<BoxCollider2DComponent>())
 			m_Context->m_EditColliders = false;
 			m_SelectionContext = entity;
 		}
@@ -106,12 +110,13 @@ namespace Chimera
 
 		if (entityDeleted)
 		{
-			/*if (entity.HasComponent<Body2DComponent>())
+			if (entity.HasComponent<Body2DComponent>())
 			{
-				Entity* e = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
+				entity.RemoveComponent<Body2DComponent>();
+				/*Entity* e = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
 				delete e;
-				m_Context->m_World->DestroyBody(entity.GetComponent<Body2DComponent>().Body);
-			}*/
+				m_Context->m_World->DestroyBody(entity.GetComponent<Body2DComponent>().Body);*/
+			}
 				
 
 			m_Context->DestroyEntity(entity);
@@ -235,7 +240,7 @@ namespace Chimera
 	{
 		if (entity.HasComponent<TagComponent>())
 		{
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			auto& name = entity.GetComponent<TagComponent>().Name;
 			bool& enabled = entity.GetComponent<TagComponent>().Enabled;
 
 			ImGui::Checkbox("##Enabled", &enabled);
@@ -243,11 +248,11 @@ namespace Chimera
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
+			strcpy_s(buffer, sizeof(buffer), name.c_str());
 
-			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+			if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
 			{
-				tag = std::string(buffer);
+				name = std::string(buffer);
 			}
 		} 
 
@@ -285,22 +290,56 @@ namespace Chimera
 				m_SelectionContext.AddComponent<RigidBody2DComponent>();
 				ImGui::CloseCurrentPopup();
 			}
+			if (ImGui::MenuItem("Lua Script"))
+			{
+				if (m_SelectionContext.HasComponent<LuaScripts>())
+				{
+					 m_SelectionContext.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>());
+				}
+
+				else
+				{
+					LuaScripts& ls = m_SelectionContext.AddComponent<LuaScripts>();
+					ls.Scripts.push_back(CreateRef<LuaScriptComponent>());
+				}
+				//m_SelectionContext.AddComponent<LuaScriptComponent>(/*"H:/Programming/Chimera/Chimera-Editor/assets/scripts/SampleScript.lua"*/);
+				ImGui::CloseCurrentPopup();
+			}
 
 			ImGui::EndPopup();
 		}
 		ImGui::PopItemWidth();
 		//ImGui::Separator();
 
-		DrawComponent<TransformComponent>("Transform", entity, [&](auto& component)
-		{	
+		if (entity.HasComponent<TransformComponent>())
+		{
+			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed
+				| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+			auto& component = entity.GetComponent<TransformComponent>();
+			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImGui::Separator();
+
+			bool open = ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), treeNodeFlags, "Transform");
+			ImGui::PopStyleVar();
+			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
+			{
+			}
+
+			if (open)
+			{
 				glm::vec3 rotation = glm::degrees(component.Rotation);
 				DrawVec3Control("Position", component.Position);
 
 				DrawVec3Control("Rotation", rotation);
 				component.Rotation = glm::radians(rotation);
 				DrawVec3Control("Scale", component.Scale, 1.0f);
-				
-		});
+				ImGui::TreePop();
+			}
+		}
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 		{
@@ -368,9 +407,10 @@ namespace Chimera
 				ImGui::Text("Texture");
 				ImGui::SameLine();
 
-				Ref<Texture2D>& tex = component.SpriteTexture;
+				//Ref<Texture2D>& tex = component.SpriteTexture;
 				std::string outPath = "";
-				ImGui::Image(reinterpret_cast<void*>(tex->GetRendererID()), ImVec2{ 30, 30 }, ImVec2{ 0,1 }, ImVec2{ 1,0 },
+
+				ImGui::Image(reinterpret_cast<void*>(component.SpriteTexture->GetRendererID()), ImVec2{ 30, 30 }, ImVec2{ 0,1 }, ImVec2{ 1,0 },
 					{ component.Color.x, component.Color.y, component.Color.z, component.Color.w });
 				ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
 					ImGuiWindowFlags_AlwaysAutoResize;
@@ -417,7 +457,7 @@ namespace Chimera
 							ImGui::CloseCurrentPopup();
 
 							outPath = m_CurrentPath.string();
-							component.SpriteTexture = Texture2D::Create(outPath);
+							component.SpriteTexture = AssetManager::GetAsset<Texture2D>(outPath);  //Texture2D::Create(outPath);
 						}
 
 					}
@@ -448,46 +488,44 @@ namespace Chimera
 
 				ImGui::Checkbox("Edit Collider", &edit);
 
-				BoxCollider2D& body = component.BoxCollider;
-
 				if (edit)
 				{
-					float boxPos[2] = { body.GetCenter().x, body.GetCenter().y };
+					float boxPos[2] = { component.GetCenter().x, component.GetCenter().y };
 					if (ImGui::DragFloat2("Collider Center", boxPos, 0.05f))
 					{
-						body.SetCenter(boxPos[0], boxPos[1]);
+						component.SetCenter(boxPos[0], boxPos[1]);
 					}
 
-					float boxSize[2] = { body.GetWidth(), body.GetHeight() };
+					float boxSize[2] = { component.GetWidth(), component.GetHeight() };
 					if (ImGui::DragFloat2("Collider Size", boxSize, 0.05f))
 					{
-						body.SetSize(boxSize[0], boxSize[1]);
+						component.SetSize(boxSize[0], boxSize[1]);
 					}
 				}
 
-				bool sensor = body.IsSensor();
+				bool sensor = component.IsSensor();
 				if (ImGui::Checkbox("Is Sensor", &sensor))
 				{
-					body.SetSensor(sensor);
+					component.SetSensor(sensor);
 				}
 				ImGui::Separator();
 
-				float density = body.GetDensity();
+				float density = component.GetDensity();
 				if (ImGui::DragFloat("Density", &density, 0.25f, 0.0f, 100000.0f))
 				{
-					body.SetDensity(density);
+					component.SetDensity(density);
 				}
 
-				float friction = body.GetFriction();
+				float friction = component.GetFriction();
 				if (ImGui::DragFloat("Friction", &friction, 0.05f, 0.0f, 1.0f))
 				{
-					body.SetFriction(friction);
+					component.SetFriction(friction);
 				}
 
-				float bounciness = body.GetBounciness();
+				float bounciness = component.GetBounciness();
 				if (ImGui::DragFloat("Bounciness", &bounciness, 0.05f, 0.0f, 1.0f))
 				{
-					body.SetBounciness(bounciness);
+					component.SetBounciness(bounciness);
 				}
 			});
 
@@ -497,52 +535,50 @@ namespace Chimera
 
 				ImGui::Checkbox("Edit Collider", &edit);
 
-				CircleCollider2D& body = component.CircleCollider;
-
 				if (edit)
 				{
-					float circlePos[2] = { body.GetCenter().x, body.GetCenter().y };
+					float circlePos[2] = { component.GetCenter().x, component.GetCenter().y };
 					if (ImGui::DragFloat2("Center", circlePos, 0.05f))
 					{
-						body.SetCenter(circlePos[0], circlePos[1]);
+						component.SetCenter(circlePos[0], circlePos[1]);
 					}
 
-					float circleRadius = body.GetRadius();
+					float circleRadius = component.GetRadius();
 					if (ImGui::DragFloat("Radius", &circleRadius, 0.05f))
 					{
-						body.SetRadius(circleRadius);
+						component.SetRadius(circleRadius);
 					}
 				}
 
-				bool sensor = body.IsSensor();
+				bool sensor = component.IsSensor();
 				if (ImGui::Checkbox("Is Sensor", &sensor))
 				{
-					body.SetSensor(sensor);
+					component.SetSensor(sensor);
 				}
 				ImGui::Separator();
 
-				float density = body.GetDensity();
+				float density = component.GetDensity();
 				if (ImGui::DragFloat("Density", &density, 0.25f, 0.0f, 100000.0f))
 				{
-					body.SetDensity(density);
+					component.SetDensity(density);
 				}
 
-				float friction = body.GetFriction();
+				float friction = component.GetFriction();
 				if (ImGui::DragFloat("Friction", &friction, 0.05f, 0.0f, 1.0f))
 				{
-					body.SetFriction(friction);
+					component.SetFriction(friction);
 				}
 
-				float bounciness = body.GetBounciness();
+				float bounciness = component.GetBounciness();
 				if (ImGui::DragFloat("Bounciness", &bounciness, 0.05f, 0.0f, 1.0f))
 				{
-					body.SetBounciness(bounciness);
+					component.SetBounciness(bounciness);
 				}
 			});
 
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, [](auto& component)
 			{
-				RigidBody2D& body = component.RigidBody;
+				RigidBody2DComponent& body = component;
 
 				const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
 				const char* currentBodyTypeString = bodyTypeStrings[(int)body.GetBodyType()];
@@ -554,7 +590,7 @@ namespace Chimera
 						if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
 						{
 							currentBodyTypeString = bodyTypeStrings[i];
-							body.SetBodyType((RigidBody2D::Body2DType)i);
+							body.SetBodyType((RigidBody2DComponent::Body2DType)i);
 						}
 
 						if (isSelected)
@@ -564,7 +600,7 @@ namespace Chimera
 					ImGui::EndCombo();
 				}
 
-				if (body.GetBodyType() != RigidBody2D::Body2DType::Static)
+				if (body.GetBodyType() != RigidBody2DComponent::Body2DType::Static)
 				{
 					float gravityScale = body.GetGravityScale();
 					if (ImGui::DragFloat("Gravity Scale", &gravityScale, 0.05f))
@@ -582,6 +618,215 @@ namespace Chimera
 				}
 				
 			});
+
+		if (entity.HasComponent<LuaScripts>())
+		{
+			std::vector<Ref<LuaScriptComponent>>& scripts = entity.GetComponent<LuaScripts>().Scripts;
+			auto it = scripts.begin();
+			while (it != scripts.end())
+			{
+				const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed
+					| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+				Ref<LuaScriptComponent> component = *it;
+				ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+				float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+				ImGui::Separator();
+
+				std::hash<int> hasher;
+				bool open = ImGui::TreeNodeEx((void*)(typeid(LuaScriptComponent).hash_code() + hasher( std::distance(scripts.begin(), it)) ),
+					treeNodeFlags, "Lua Script");
+				ImGui::PopStyleVar();
+
+				ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+				if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
+				{
+					ImGui::OpenPopup("ComponentSettings");
+				}
+
+
+				bool removeComponent = false;
+				if (ImGui::BeginPopup("ComponentSettings"))
+				{
+					if (ImGui::MenuItem("Remove component"))
+						removeComponent = true;
+
+					ImGui::EndPopup();
+				}
+
+				if (open)
+				{
+					ImGui::Text("Script:");
+					ImGui::SameLine();
+
+					ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+						ImGuiWindowFlags_AlwaysAutoResize;
+
+					std::string outPath = component->GetName();
+
+					if (outPath == "")
+						ImGui::Text("[NO SCRIPT]");
+					else
+						ImGui::Text(outPath.c_str());
+
+					bool isOpen = true;
+					if (ImGui::IsItemClicked())
+					{
+						ImGui::OpenPopup("Select Script");
+					}
+					if (ImGui::BeginPopupModal("Select Script", &isOpen, modalFlags))
+					{
+						//Auto resize text wrap to popup width.
+						ImGui::Spacing();
+						ImGui::PushItemWidth(-1);
+						ImGui::TextWrapped(m_CurrentPath.string().data());
+						ImGui::PopItemWidth();
+
+						//ImVec2 size = ImGui::GetContentRegionAvail();
+
+						ImGui::SameLine();
+
+						// Make the "Select" button look / act disabled if the current selection is a directory.
+						if (m_IsCurrentPathDir)
+						{
+							static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
+
+							ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+							ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
+							ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
+
+							ImGui::Button("Select");
+
+							ImGui::PopStyleColor();
+							ImGui::PopStyleColor();
+							ImGui::PopStyleColor();
+
+						}
+						else
+						{
+							if (ImGui::Button("Select"))
+							{
+								ImGui::CloseCurrentPopup();
+
+								outPath = m_CurrentPath.string();
+								component->Load(outPath);
+							}
+						}
+
+						//ImGui::Text(std::to_string(size.y / (style.ItemSpacing.y + ImGui::GetFontSize() )).c_str()  );
+						ImGui::PushItemWidth(-1);
+						if (ImGui::ListBox("##", &m_SelectionPath, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(), 5))
+						{
+							//Update current path to the selected list item.
+							m_CurrentPath = m_FilesInScope[m_SelectionPath].Path;
+							m_IsCurrentPathDir = fs::is_directory(m_CurrentPath);
+
+							//If the selection is a directory, repopulate the list with the contents of that directory.
+							if (m_IsCurrentPathDir) {
+								m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+							}
+
+						}
+						ImGui::PopItemWidth();
+
+						ImGui::EndPopup();
+					}
+					ImGui::TreePop();
+				}
+				if (removeComponent)
+				{
+					it = scripts.erase(it);
+					if (scripts.empty())
+					{
+						entity.RemoveComponent<LuaScripts>();
+						break;
+					}
+						
+				}
+				else
+					++it;
+					
+			}
+		}
+		/*DrawComponent<LuaScriptComponent>("Custom Script", entity, [&](auto& component)
+			{
+				ImGui::Text("Script:");
+				ImGui::SameLine();
+
+				ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+					ImGuiWindowFlags_AlwaysAutoResize;
+
+				std::string outPath = component.GetName();
+				
+				if(outPath == "")
+					ImGui::Text("[NO SCRIPT]");
+				else
+					ImGui::Text(outPath.c_str());
+
+				bool isOpen = true;
+				if (ImGui::IsItemClicked())
+				{
+					ImGui::OpenPopup("Select Script");
+				}
+				if (ImGui::BeginPopupModal("Select Script", &isOpen, modalFlags))
+				{
+					//Auto resize text wrap to popup width.
+					ImGui::Spacing();
+					ImGui::PushItemWidth(-1);
+					ImGui::TextWrapped(m_CurrentPath.string().data());
+					ImGui::PopItemWidth();
+
+					//ImVec2 size = ImGui::GetContentRegionAvail();
+
+					ImGui::SameLine();
+
+					// Make the "Select" button look / act disabled if the current selection is a directory.
+					if (m_IsCurrentPathDir)
+					{
+						static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
+
+						ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
+
+						ImGui::Button("Select");
+
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+
+					}
+					else
+					{
+						if (ImGui::Button("Select"))
+						{
+							ImGui::CloseCurrentPopup();
+
+							outPath = m_CurrentPath.string();
+							component.Load(outPath);
+						}
+					}
+
+					//ImGui::Text(std::to_string(size.y / (style.ItemSpacing.y + ImGui::GetFontSize() )).c_str()  );
+					ImGui::PushItemWidth(-1);
+					if (ImGui::ListBox("##", &m_SelectionPath, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(), 5))
+					{
+						//Update current path to the selected list item.
+						m_CurrentPath = m_FilesInScope[m_SelectionPath].Path;
+						m_IsCurrentPathDir = fs::is_directory(m_CurrentPath);
+
+						//If the selection is a directory, repopulate the list with the contents of that directory.
+						if (m_IsCurrentPathDir) {
+							m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+						}
+
+					}
+					ImGui::PopItemWidth();
+
+					ImGui::EndPopup();
+				}
+			});*/
 
 		/*DrawComponent<Body2DComponent>("Body 2D Component", entity, [](auto& component)
 			{

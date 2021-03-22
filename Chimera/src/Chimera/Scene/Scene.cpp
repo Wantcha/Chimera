@@ -1,11 +1,13 @@
 #include "cmpch.h"
 #include "Scene.h"
 #include "Entity.h"
+#include "Chimera/Assets/AssetManager.h"
 
 #include "Components.h"
 #include "Chimera/Renderer/Renderer2D.h"
 
 #include <glm/glm.hpp>
+#include "Chimera/Scripting/LuaManager.h"
 
 
 namespace Chimera
@@ -19,6 +21,9 @@ namespace Chimera
 		g_debugDraw.Create();
 		m_World->SetDebugDraw(&g_debugDraw);
 		m_World->SetContactListener(&m_ContactListener);
+
+		LuaManager::Get().Init(this);
+		// LuaManager::Get().InitScripts();
 		
 
 		/*b2BodyDef boxBodyDef;
@@ -60,7 +65,7 @@ namespace Chimera
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "New Entity" : name;
+		tag.Name = name.empty() ? "New Entity" : name;
 		
 		return entity;
 	}
@@ -78,10 +83,11 @@ namespace Chimera
 
 			bc.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
 			
-
 			//Entity* userData = reinterpret_cast<Entity*>(rb.RigidBody.GetBody()->GetUserData().pointer);
 			//CM_CORE_WARN("{0}", (uint32_t) *userData);
 		}
+
+		LuaManager::Get().UpdateScripts(ts);
 
 
 		Renderer2D::BeginScene(camera);
@@ -114,24 +120,26 @@ namespace Chimera
 			m_DestructionStack.pop();
 		}
 
-		m_World->Step(1 / 60.0f, 6, 2);
-
-		b2Body* body = m_World->GetBodyList();
-		while (body != nullptr)
-		{
-			Entity* e = reinterpret_cast<Entity*>(body->GetUserData().pointer);
-			TransformComponent& tc = e->GetComponent<TransformComponent>();
-			tc.Position = { body->GetPosition().x, body->GetPosition().y, e->GetComponent<TransformComponent>().Position.z };
-			tc.Rotation.z = body->GetAngle();
-			body = body->GetNext();
-		}
-
 		if (m_EditColliders)
 		{
 			g_debugDraw.SetFlags(b2Draw::e_shapeBit);
 			g_debugDraw.SetCamera(camera);
 			m_World->DebugDraw();
 			g_debugDraw.Flush();
+		}
+	}
+	void Scene::OnFixedUpdateEditor(float fixedts)
+	{
+		m_World->Step(fixedts, 6, 2);
+
+		b2Body* body = m_World->GetBodyList();
+		while (body != nullptr)
+		{
+			Entity* e = reinterpret_cast<Entity*>(body->GetUserData().pointer);
+			TransformComponent& tc = e->GetComponent<TransformComponent>();
+			tc.Position = { body->GetPosition().x, body->GetPosition().y, tc.Position.z };
+			tc.Rotation.z = body->GetAngle();
+			body = body->GetNext();
 		}
 	}
 	/*void Scene::OnUpdateRuntime(Timestep ts)
@@ -252,10 +260,10 @@ namespace Chimera
 
 			auto transform = entity.GetComponent<TransformComponent>();
 
-			component.BoxCollider.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component.BoxCollider);
+			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component);
 
-			component.BoxCollider.SetBody(body.Body);
-			component.BoxCollider.SetSize(transform.Scale.x, transform.Scale.y);
+			component.SetBody(body.Body);
+			component.SetSize(transform.Scale.x, transform.Scale.y);
 
 			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
 			++body.ColliderCount;
@@ -276,12 +284,12 @@ namespace Chimera
 			Entity* e = new Entity(entity);
 			body.Body->GetUserData().pointer = reinterpret_cast<uintptr_t>(e);
 
-			BoxCollider2D* bc = &component.BoxCollider;
-			component.BoxCollider.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(bc);
+			BoxCollider2DComponent* bc = &component;
+			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(bc);
 
 
-			component.BoxCollider.SetBody(body.Body);
-			component.BoxCollider.SetSize(transform.Scale.x, transform.Scale.y);
+			component.SetBody(body.Body);
+			component.SetSize(transform.Scale.x, transform.Scale.y);
 
 			//Collider2D* colliderA = (Collider2D*)component.BoxCollider.GetFixtureDef().userData.pointer;
 
@@ -299,10 +307,10 @@ namespace Chimera
 
 			auto transform = entity.GetComponent<TransformComponent>();
 
-			component.CircleCollider.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component.CircleCollider);
+			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component);
 
-			component.CircleCollider.SetBody(body.Body);
-			component.CircleCollider.SetRadius(transform.Scale.x / 2.0f);
+			component.SetBody(body.Body);
+			component.SetRadius(transform.Scale.x / 2.0f);
 
 			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
 			++body.ColliderCount;
@@ -324,10 +332,10 @@ namespace Chimera
 			Entity* e = new Entity(entity);
 			body.Body->GetUserData().pointer = reinterpret_cast<uintptr_t>(e);
 
-			component.CircleCollider.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component.CircleCollider);
+			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component);
 
-			component.CircleCollider.SetBody(body.Body);
-			component.CircleCollider.SetRadius(transform.Scale.x / 2.0f);
+			component.SetBody(body.Body);
+			component.SetRadius(transform.Scale.x / 2.0f);
 
 			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
 			++body.ColliderCount;
@@ -342,12 +350,12 @@ namespace Chimera
 		{
 			Body2DComponent& body = entity.GetComponent<Body2DComponent>();
 
-			component.RigidBody.SetBody(body.Body);
+			component.SetBody(body.Body);
 
-			component.RigidBody.SetGravityScale(1.0f);
-			component.RigidBody.SetDiscreteCollision(true);
-			component.RigidBody.SetFixedRotation(false);
-			component.RigidBody.SetBodyType(RigidBody2D::Body2DType::Dynamic);
+			component.SetGravityScale(1.0f);
+			component.SetDiscreteCollision(true);
+			component.SetFixedRotation(false);
+			component.SetBodyType(RigidBody2DComponent::Body2DType::Dynamic);
 		}
 
 		else
@@ -368,13 +376,13 @@ namespace Chimera
 			auto transform = entity.GetComponent<TransformComponent>();
 			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
 
-			component.RigidBody.SetBody(body.Body);
+			component.SetBody(body.Body);
 
-			component.RigidBody.SetGravityScale(1.0f);
-			component.RigidBody.SetDiscreteCollision(true);
-			component.RigidBody.SetFixedRotation(false);
-			component.RigidBody.SetBodyType(RigidBody2D::Body2DType::Dynamic);
-			component.RigidBody.SetMass(1.0f);
+			component.SetGravityScale(1.0f);
+			component.SetDiscreteCollision(true);
+			component.SetFixedRotation(false);
+			component.SetBodyType(RigidBody2DComponent::Body2DType::Dynamic);
+			component.SetMass(1.0f);
 			//userData = reinterpret_cast<Entity*>(body.Body->GetUserData().pointer);
 			//CM_CORE_INFO("Test");
 		}
@@ -390,6 +398,20 @@ namespace Chimera
 	template<>
 	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
 	{
+
+	}
+
+	template<>
+	void Scene::OnComponentAdded<LuaScriptComponent>(Entity entity, LuaScriptComponent& component)
+	{
+		//component.OnInit();
+
+	}
+
+	template<>
+	void Scene::OnComponentAdded<LuaScripts>(Entity entity, LuaScripts& component)
+	{
+		//component.OnInit();
 
 	}
 
@@ -421,7 +443,6 @@ namespace Chimera
 	template<>
 	void Scene::OnComponentRemoved<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
 	{
-
 	}
 
 	template<>
@@ -430,9 +451,9 @@ namespace Chimera
 		Body2DComponent& body = entity.GetComponent<Body2DComponent>();
 		body.ColliderCount--;
 		
-		component.BoxCollider.DestroyCollider();
+		component.DestroyCollider();
 
-		//bool e = entity.HasComponent<RigidBody2D>();
+		//bool e = entity.HasComponent<RigidBody2DComponent>();
 		if (body.ColliderCount == 0 && !entity.HasComponent<RigidBody2DComponent>())
 		{
 			entity.RemoveComponent<Body2DComponent>();
@@ -445,7 +466,7 @@ namespace Chimera
 		Body2DComponent& body = entity.GetComponent<Body2DComponent>();
 		body.ColliderCount--;
 
-		component.CircleCollider.DestroyCollider();
+		component.DestroyCollider();
 
 		if (body.ColliderCount == 0 && !entity.HasComponent<RigidBody2DComponent>())
 		{
@@ -476,6 +497,18 @@ namespace Chimera
 	template<>
 	void Scene::OnComponentRemoved<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
 	{
+
+	}
+	template<>
+	void Scene::OnComponentRemoved<LuaScriptComponent>(Entity entity, LuaScriptComponent& component)
+	{
+
+	}
+
+	template<>
+	void Scene::OnComponentRemoved<LuaScripts>(Entity entity, LuaScripts& component)
+	{
+		//component.OnInit();
 
 	}
 }

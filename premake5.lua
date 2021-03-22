@@ -29,6 +29,8 @@ IncludeDir["stb_image"] = "%{wks.location}/Chimera/vendor/stb_image"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Chimera/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Chimera/vendor/ImGuizmo"
 IncludeDir["box2d"] = "%{wks.location}/Chimera/vendor/box2d/include"
+IncludeDir["Lua"] = "%{wks.location}/Chimera/vendor/Lua/src"
+IncludeDir["sol2"] = "%{wks.location}/Chimera/vendor/sol2/include"
 
 -- Include premake files from other projects
 group "Dependencies"
@@ -38,6 +40,7 @@ group "Dependencies"
 	include "Chimera/vendor/imgui"
 	include "Chimera/vendor/yaml-cpp"
 	include "Chimera/vendor/box2d"
+	include "Chimera/vendor/Lua"
 group ""
 
 include "Chimera"

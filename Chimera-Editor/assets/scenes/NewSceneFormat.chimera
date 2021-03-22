@@ -1,0 +1,24 @@
+Scene: Untitled
+Entities:
+  - Entity: 0
+    TagComponent:
+      Name: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+    BoxCollider2DComponent:
+      ColliderCenter: [0, 0, 0]
+      ColliderSize: [1, 1]
+      Sensor: false
+      Density: 1
+      Friction: 0.300000012
+      Bounciness: 0.100000001
+    LuaScripts:
+      - LuaScriptComponent:
+          FilePath: H:\Programming\Chimera\Chimera-Editor\assets\scripts\EntityMovement.lua
+      - LuaScriptComponent:
+          FilePath: H:\Programming\Chimera\Chimera-Editor\assets\scripts\SampleScript.lua

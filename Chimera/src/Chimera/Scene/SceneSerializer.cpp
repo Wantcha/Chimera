@@ -112,7 +112,7 @@ namespace Chimera
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap;// Entity
-		out << YAML::Key << "Entity"<< YAML::Value << (uint32_t)entity; //Entity ID
+		out << YAML::Key << "Entity" << YAML::Value << (uint32_t)entity; //Entity ID
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -120,7 +120,7 @@ namespace Chimera
 			out << YAML::BeginMap;
 
 			auto& tag = entity.GetComponent<TagComponent>();
-			out << YAML::Key << "Tag" << YAML::Value << tag.Tag;
+			out << YAML::Key << "Name" << YAML::Value << tag.Name;
 			out << YAML::Key << "Enabled" << YAML::Value << tag.Enabled;
 			out << YAML::EndMap;
 		}
@@ -174,31 +174,31 @@ namespace Chimera
 
 		if (entity.HasComponent<RigidBody2DComponent>())
 		{
-			out << YAML::Key << "RigidBody2DComponent";
+			out << YAML::Key << "RigidBody2DComponent" << YAML::Value;
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "RigidBody2D" << YAML::Value;
-			out << YAML::BeginMap;
+			//out << YAML::Key << "RigidBody2DComponent" << YAML::Value;
+			//out << YAML::BeginMap;
 
-			auto& rb = entity.GetComponent<RigidBody2DComponent>().RigidBody;
+			auto& rb = entity.GetComponent<RigidBody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rb.GetBodyType();
 			out << YAML::Key << "GravityScale" << YAML::Value << rb.GetGravityScale();
 			out << YAML::Key << "DiscreteCollision" << YAML::Value << rb.IsDiscreteCollision();
 			out << YAML::Key << "FixedRotation" << YAML::Value << rb.IsFixedRotation();
 
-			out << YAML::EndMap;
+			//out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 
 		if (entity.HasComponent<BoxCollider2DComponent>())
 		{
-			out << YAML::Key << "BoxCollider2DComponent";
+			out << YAML::Key << "BoxCollider2DComponent" << YAML::Value;
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "BoxCollider2D" << YAML::Value;
-			out << YAML::BeginMap;
+			//out << YAML::Key << "BoxCollider2DComponent" << YAML::Value;
+			//out << YAML::BeginMap;
 
-			auto& box = entity.GetComponent<BoxCollider2DComponent>().BoxCollider;
+			auto& box = entity.GetComponent<BoxCollider2DComponent>();
 			glm::vec3 pos = { box.GetCenter().x, box.GetCenter().y, 0.0f };
 			out << YAML::Key << "ColliderCenter" << YAML::Value << pos;
 			out << YAML::Key << "ColliderSize" << YAML::Value << box.GetSize();
@@ -207,19 +207,19 @@ namespace Chimera
 			out << YAML::Key << "Friction" << YAML::Value << box.GetFriction();
 			out << YAML::Key << "Bounciness" << YAML::Value << box.GetBounciness();
 
-			out << YAML::EndMap;
+			//out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 
 		if (entity.HasComponent<CircleCollider2DComponent>())
 		{
-			out << YAML::Key << "CircleCollider2DComponent";
+			out << YAML::Key << "CircleCollider2DComponent" << YAML::Value;
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "CircleCollider2D" << YAML::Value;
-			out << YAML::BeginMap;
+			//out << YAML::Key << "CircleCollider2DComponent" << YAML::Value;
+			//out << YAML::BeginMap;
 
-			auto& cc = entity.GetComponent<CircleCollider2DComponent>().CircleCollider;
+			auto& cc = entity.GetComponent<CircleCollider2DComponent>();
 			glm::vec3 pos = { cc.GetCenter().x, cc.GetCenter().y, 0.0f };
 			out << YAML::Key << "ColliderCenter" << YAML::Value << pos;
 			out << YAML::Key << "ColliderRadius" << YAML::Value << cc.GetRadius();
@@ -228,8 +228,28 @@ namespace Chimera
 			out << YAML::Key << "Friction" << YAML::Value << cc.GetFriction();
 			out << YAML::Key << "Bounciness" << YAML::Value << cc.GetBounciness();
 
+			//out << YAML::EndMap;
 			out << YAML::EndMap;
-			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<LuaScripts>())
+		{
+			out << YAML::Key << "LuaScripts" << YAML::Value << YAML::BeginSeq;
+
+			std::vector<Ref<LuaScriptComponent>>& scripts = entity.GetComponent<LuaScripts>().Scripts;
+			//out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+			for (Ref<LuaScriptComponent> lsc : scripts)
+			{
+				out << YAML::BeginMap;
+
+				out << YAML::Key << "LuaScriptComponent" << YAML::Value;
+				out << YAML::BeginMap;
+				out << YAML::Key << "FilePath" << YAML::Value << lsc->GetFilePath();
+				out << YAML::EndMap;
+
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
 		}
 
 		out << YAML::EndMap;
@@ -239,8 +259,8 @@ namespace Chimera
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene"<< YAML::Value << "Untitled";
-		out << YAML::Key << "Entities"<< YAML::Value << YAML::BeginSeq;
+		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
+		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 			{
 				Entity entity = { entityID, m_Scene.get() };
@@ -284,7 +304,7 @@ namespace Chimera
 				auto tagComponent = entity["TagComponent"];
 				if (tagComponent)
 				{
-					name = tagComponent["Tag"].as<std::string>();
+					name = tagComponent["Name"].as<std::string>();
 					enabled = tagComponent["Enabled"].as<bool>();
 				}
 					
@@ -332,39 +352,58 @@ namespace Chimera
 				auto rigiBody2DComponent = entity["RigidBody2DComponent"];
 				if (rigiBody2DComponent)
 				{
-					auto& rb = deserializedEntity.AddComponent<RigidBody2DComponent>().RigidBody;
-					auto& rbProps = rigiBody2DComponent["RigidBody2D"];
+					auto& rb = deserializedEntity.AddComponent<RigidBody2DComponent>();
+					//auto& rbProps = rigiBody2DComponent["RigidBody2DComponent"];
 
-					rb.SetBodyType((RigidBody2D::Body2DType)rbProps["BodyType"].as<int>());
-					rb.SetGravityScale(rbProps["GravityScale"].as<float>());
-					rb.SetDiscreteCollision(rbProps["DiscreteCollision"].as<bool>());
-					rb.SetFixedRotation(rbProps["FixedRotation"].as<bool>());
+					rb.SetBodyType((RigidBody2DComponent::Body2DType)rigiBody2DComponent["BodyType"].as<int>());
+					rb.SetGravityScale(rigiBody2DComponent["GravityScale"].as<float>());
+					rb.SetDiscreteCollision(rigiBody2DComponent["DiscreteCollision"].as<bool>());
+					rb.SetFixedRotation(rigiBody2DComponent["FixedRotation"].as<bool>());
 				}
 
 				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
 				if (boxCollider2DComponent)
 				{
-					auto& box = deserializedEntity.AddComponent<BoxCollider2DComponent>().BoxCollider;
-					auto& boxProps = boxCollider2DComponent["BoxCollider2D"];
+					auto& box = deserializedEntity.AddComponent<BoxCollider2DComponent>();
+					//auto& boxProps = boxCollider2DComponent["BoxCollider2DComponent"];
 					
-					box.SetCenter(boxProps["ColliderCenter"].as<glm::vec3>());
-					box.SetSize(boxProps["ColliderSize"].as<glm::vec2>());
-					box.SetDensity(boxProps["Density"].as<float>());
-					box.SetFriction(boxProps["Friction"].as<float>());
-					box.SetBounciness(boxProps["Bounciness"].as<float>());
+					box.SetCenter(boxCollider2DComponent["ColliderCenter"].as<glm::vec3>());
+					box.SetSize(boxCollider2DComponent["ColliderSize"].as<glm::vec2>());
+					box.SetDensity(boxCollider2DComponent["Density"].as<float>());
+					box.SetFriction(boxCollider2DComponent["Friction"].as<float>());
+					box.SetBounciness(boxCollider2DComponent["Bounciness"].as<float>());
 				}
 
 				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
 				if (circleCollider2DComponent)
 				{
-					auto& cc = deserializedEntity.AddComponent<CircleCollider2DComponent>().CircleCollider;
-					auto& ccProps = circleCollider2DComponent["CircleCollider2D"];
+					auto& cc = deserializedEntity.AddComponent<CircleCollider2DComponent>();
+					//auto& ccProps = circleCollider2DComponent["CircleCollider2DComponent"];
 
-					cc.SetCenter(ccProps["ColliderCenter"].as<glm::vec3>());
-					cc.SetRadius(ccProps["ColliderRadius"].as<float>());
-					cc.SetDensity(ccProps["Density"].as<float>());
-					cc.SetFriction(ccProps["Friction"].as<float>());
-					cc.SetBounciness(ccProps["Bounciness"].as<float>());
+					cc.SetCenter(circleCollider2DComponent["ColliderCenter"].as<glm::vec3>());
+					cc.SetRadius(circleCollider2DComponent["ColliderRadius"].as<float>());
+					cc.SetDensity(circleCollider2DComponent["Density"].as<float>());
+					cc.SetFriction(circleCollider2DComponent["Friction"].as<float>());
+					cc.SetBounciness(circleCollider2DComponent["Bounciness"].as<float>());
+				}
+
+				auto scripts = entity["LuaScripts"];
+				if (scripts)
+				{
+					for (auto script : scripts)
+					{
+						std::string filePath = script["LuaScriptComponent"]["FilePath"].as<std::string>();
+						if (deserializedEntity.HasComponent<LuaScripts>())
+						{
+							deserializedEntity.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>(filePath));
+						}
+
+						else
+						{
+							LuaScripts& ls = deserializedEntity.AddComponent<LuaScripts>();
+							ls.Scripts.push_back(CreateRef<LuaScriptComponent>(filePath));
+						}
+					}
 				}
 			}
 		}

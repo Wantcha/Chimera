@@ -45,6 +45,20 @@ namespace Chimera
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
+		bool IsNull()
+		{
+			return m_EntityHandle == entt::null;
+		}
+
+		void SetNull()
+		{
+			m_EntityHandle = entt::null;
+			m_Scene = nullptr;
+		}
+
+		std::string GetName();
+		void SetName(std::string name);
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 		operator entt::entity() const { return m_EntityHandle; }

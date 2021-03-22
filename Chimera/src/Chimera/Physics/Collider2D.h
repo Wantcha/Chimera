@@ -5,6 +5,8 @@
 
 namespace Chimera
 {
+	//class Entity;
+
 	class Collider2D
 	{
 	public:
@@ -17,7 +19,7 @@ namespace Chimera
 		Collider2D(b2Body* body, bool isSensor = false, float friction = 0.3f, float bounciness = 0.1f, float density = 1.0f);
 
 		virtual void SetCenter(float x, float y) = 0;
-		virtual void SetCenter(glm::vec3 center) = 0;
+		virtual void SetCenter(glm::vec2 center) = 0;
 
 		void SetBody(b2Body* body) { m_Body = body; UpdateFixtureDef(); }
 		void SetDensity(float density) { m_Density = m_FixtureDef.density = density; UpdateFixture(); }
@@ -34,6 +36,8 @@ namespace Chimera
 		float GetFriction() const { return m_Friction; }
 		b2FixtureDef& GetFixtureDef() { return m_FixtureDef; }
 		b2Fixture* GetFixture() { return m_Fixture; }
+
+		//Entity GetEntity() { return *(Entity*)m_Body->GetUserData().pointer; }
 
 		Collider2D& operator=(const Collider2D& other)
 		{

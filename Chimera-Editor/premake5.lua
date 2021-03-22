@@ -21,7 +21,9 @@ project "Chimera-Editor"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.box2d}"
+		"%{IncludeDir.box2d}",
+		"%{IncludeDir.Lua}",
+		"%{IncludeDir.sol2}"
 	}
 
 	links

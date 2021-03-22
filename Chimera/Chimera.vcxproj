@@ -77,12 +77,13 @@
       <PrecompiledHeaderFile>cmpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;CM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;vendor\Lua\src;vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -99,7 +100,7 @@
       <PrecompiledHeaderFile>cmpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;CM_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;vendor\Lua\src;vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -107,6 +108,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -124,7 +126,7 @@
       <PrecompiledHeaderFile>cmpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;CM_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\GLAD\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt\include;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\box2d\include;vendor\Lua\src;vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -132,6 +134,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -145,6 +148,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Chimera.h" />
+    <ClInclude Include="src\Chimera\Assets\Asset.h" />
+    <ClInclude Include="src\Chimera\Assets\AssetCache.h" />
+    <ClInclude Include="src\Chimera\Assets\AssetManager.h" />
     <ClInclude Include="src\Chimera\Core\Application.h" />
     <ClInclude Include="src\Chimera\Core\Core.h" />
     <ClInclude Include="src\Chimera\Core\EntryPoint.h" />
@@ -163,12 +169,12 @@
     <ClInclude Include="src\Chimera\Events\MouseEvent.h" />
     <ClInclude Include="src\Chimera\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Chimera\Math\Math.h" />
-    <ClInclude Include="src\Chimera\Physics\BoxCollider2D.h" />
-    <ClInclude Include="src\Chimera\Physics\CircleCollider2D.h" />
+    <ClInclude Include="src\Chimera\Physics\BoxCollider2DComponent.h" />
+    <ClInclude Include="src\Chimera\Physics\CircleCollider2DComponent.h" />
     <ClInclude Include="src\Chimera\Physics\Collider2D.h" />
     <ClInclude Include="src\Chimera\Physics\ContactListener2D.h" />
     <ClInclude Include="src\Chimera\Physics\Physics2DDebugDraw.h" />
-    <ClInclude Include="src\Chimera\Physics\RigidBody2D.h" />
+    <ClInclude Include="src\Chimera\Physics\RigidBody2DComponent.h" />
     <ClInclude Include="src\Chimera\Renderer\Buffer.h" />
     <ClInclude Include="src\Chimera\Renderer\Camera.h" />
     <ClInclude Include="src\Chimera\Renderer\EditorCamera.h" />
@@ -190,6 +196,8 @@
     <ClInclude Include="src\Chimera\Scene\SceneCamera.h" />
     <ClInclude Include="src\Chimera\Scene\SceneSerializer.h" />
     <ClInclude Include="src\Chimera\Scene\ScriptableEntity.h" />
+    <ClInclude Include="src\Chimera\Scripting\LuaManager.h" />
+    <ClInclude Include="src\Chimera\Scripting\LuaScriptComponent.h" />
     <ClInclude Include="src\Chimera\Utils\PlatformUtils.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
@@ -612,6 +620,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Chimera\Assets\AssetManager.cpp" />
     <ClCompile Include="src\Chimera\Core\Application.cpp" />
     <ClCompile Include="src\Chimera\Core\Layer.cpp" />
     <ClCompile Include="src\Chimera\Core\LayerStack.cpp" />
@@ -619,12 +628,12 @@
     <ClCompile Include="src\Chimera\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Chimera\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Chimera\Math\Math.cpp" />
-    <ClCompile Include="src\Chimera\Physics\BoxCollider2D.cpp" />
-    <ClCompile Include="src\Chimera\Physics\CircleCollider2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\BoxCollider2DComponent.cpp" />
+    <ClCompile Include="src\Chimera\Physics\CircleCollider2DComponent.cpp" />
     <ClCompile Include="src\Chimera\Physics\Collider2D.cpp" />
     <ClCompile Include="src\Chimera\Physics\ContactListener2D.cpp" />
     <ClCompile Include="src\Chimera\Physics\Physics2DDebugDraw.cpp" />
-    <ClCompile Include="src\Chimera\Physics\RigidBody2D.cpp" />
+    <ClCompile Include="src\Chimera\Physics\RigidBody2DComponent.cpp" />
     <ClCompile Include="src\Chimera\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Chimera\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Chimera\Renderer\Framebuffer.cpp" />
@@ -642,6 +651,8 @@
     <ClCompile Include="src\Chimera\Scene\Scene.cpp" />
     <ClCompile Include="src\Chimera\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\Chimera\Scene\SceneSerializer.cpp" />
+    <ClCompile Include="src\Chimera\Scripting\LuaManager.cpp" />
+    <ClCompile Include="src\Chimera\Scripting\LuaScriptComponent.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />
@@ -675,6 +686,9 @@
     </ProjectReference>
     <ProjectReference Include="vendor\box2d\box2d.vcxproj">
       <Project>{E4442B0F-5059-53C0-19DB-F61F85AE4FF1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vendor\Lua\Lua.vcxproj">
+      <Project>{A705880B-130F-887C-9C8A-9E7C0893937C}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

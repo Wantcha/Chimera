@@ -6,6 +6,24 @@
 
 namespace Chimera
 {
+	bool Input::m_PressedKeys[255] = { 0 };
+
+	bool Input::IsKeyDown(int keycode)
+	{
+		bool state = m_PressedKeys[keycode];
+		m_PressedKeys[keycode] = false;
+		return state;
+	}
+
+	bool Input::IsKeyReleased(int keycode)
+	{
+		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+		auto state = glfwGetKey(window, keycode);
+
+		return state == GLFW_RELEASE;
+		
+	}
+
 	bool Input::IsKeyPressed(int keycode)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -13,6 +31,7 @@ namespace Chimera
 
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
+
 	bool Input::IsMouseButtonPressed(int button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());

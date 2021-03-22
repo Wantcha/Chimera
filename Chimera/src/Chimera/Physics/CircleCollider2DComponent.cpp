@@ -1,10 +1,10 @@
 #include "cmpch.h"
 
-#include "CircleCollider2D.h"
+#include "CircleCollider2DComponent.h"
 
 namespace Chimera
 {
-	CircleCollider2D::CircleCollider2D(b2Body* body, float radius, bool isSensor, float friction, float bounciness, float density)
+	CircleCollider2DComponent::CircleCollider2DComponent(b2Body* body, float radius, bool isSensor, float friction, float bounciness, float density)
 		: Collider2D{ body, isSensor, friction, bounciness, density }, m_Radius(radius)
 	{
 		//m_BoxColliderShape.SetAsBox(m_Width / 2.0f, m_Height / 2.0f);
@@ -13,14 +13,14 @@ namespace Chimera
 
 		m_Fixture = m_Body->CreateFixture(&m_FixtureDef);
 	}
-	void CircleCollider2D::SetCenter(float x, float y)
+	void CircleCollider2DComponent::SetCenter(float x, float y)
 	{
 		m_CenterX = x;
 		m_CenterY = y;
 		m_CircleColliderShape.m_p.Set(x, y);
 		UpdateFixture();
 	}
-	void CircleCollider2D::UpdateFixture()
+	void CircleCollider2DComponent::UpdateFixture()
 	{
 		m_FixtureDef.shape = &m_CircleColliderShape;
 

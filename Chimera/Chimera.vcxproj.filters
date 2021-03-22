@@ -7,6 +7,9 @@
     <Filter Include="src\Chimera">
       <UniqueIdentifier>{5594B92C-C149-3222-4A3E-2CF9B6F22826}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chimera\Assets">
+      <UniqueIdentifier>{970979C5-83ED-391B-EC4D-346ED850249D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chimera\Core">
       <UniqueIdentifier>{CDB5950D-B9AE-B45F-E2E0-99E4CE38946B}</UniqueIdentifier>
     </Filter>
@@ -22,11 +25,17 @@
     <Filter Include="src\Chimera\Math">
       <UniqueIdentifier>{4EF69A0D-3AEF-B95F-6321-9FE44F79996B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Chimera\Physics">
+      <UniqueIdentifier>{C71C0FDE-337E-ECEB-BCEB-329E284C23AB}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Chimera\Renderer">
       <UniqueIdentifier>{9B87CD76-8716-5740-3035-6B3B1CA367E6}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Chimera\Scene">
       <UniqueIdentifier>{322D67C1-9E43-6557-E7BA-F078531036DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Chimera\Scripting">
+      <UniqueIdentifier>{9737D22C-03A4-8D27-CC97-258538C3AF8F}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Chimera\Utils">
       <UniqueIdentifier>{75C194C1-E1D7-9257-2A4F-1E7996A463DF}</UniqueIdentifier>
@@ -71,6 +80,15 @@
   <ItemGroup>
     <ClInclude Include="src\Chimera.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Assets\Asset.h">
+      <Filter>src\Chimera\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Assets\AssetCache.h">
+      <Filter>src\Chimera\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Assets\AssetManager.h">
+      <Filter>src\Chimera\Assets</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\Core\Application.h">
       <Filter>src\Chimera\Core</Filter>
@@ -125,6 +143,24 @@
     </ClInclude>
     <ClInclude Include="src\Chimera\Math\Math.h">
       <Filter>src\Chimera\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Physics\BoxCollider2DComponent.h">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Physics\CircleCollider2DComponent.h">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Physics\Collider2D.h">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Physics\ContactListener2D.h">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Physics\Physics2DDebugDraw.h">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Physics\RigidBody2DComponent.h">
+      <Filter>src\Chimera\Physics</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\Renderer\Buffer.h">
       <Filter>src\Chimera\Renderer</Filter>
@@ -188,6 +224,12 @@
     </ClInclude>
     <ClInclude Include="src\Chimera\Scene\ScriptableEntity.h">
       <Filter>src\Chimera\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Scripting\LuaManager.h">
+      <Filter>src\Chimera\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Scripting\LuaScriptComponent.h">
+      <Filter>src\Chimera\Scripting</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\Utils\PlatformUtils.h">
       <Filter>src\Chimera\Utils</Filter>
@@ -1449,14 +1491,11 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chimera\Physics\Physics2DDebugDraw.h" />
-    <ClInclude Include="src\Chimera\Physics\BoxCollider2D.h" />
-    <ClInclude Include="src\Chimera\Physics\RigidBody2D.h" />
-    <ClInclude Include="src\Chimera\Physics\Collider2D.h" />
-    <ClInclude Include="src\Chimera\Physics\CircleCollider2D.h" />
-    <ClInclude Include="src\Chimera\Physics\ContactListener2D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Chimera\Assets\AssetManager.cpp">
+      <Filter>src\Chimera\Assets</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chimera\Core\Application.cpp">
       <Filter>src\Chimera\Core</Filter>
     </ClCompile>
@@ -1477,6 +1516,24 @@
     </ClCompile>
     <ClCompile Include="src\Chimera\Math\Math.cpp">
       <Filter>src\Chimera\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Physics\BoxCollider2DComponent.cpp">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Physics\CircleCollider2DComponent.cpp">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Physics\Collider2D.cpp">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Physics\ContactListener2D.cpp">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Physics\Physics2DDebugDraw.cpp">
+      <Filter>src\Chimera\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Physics\RigidBody2DComponent.cpp">
+      <Filter>src\Chimera\Physics</Filter>
     </ClCompile>
     <ClCompile Include="src\Chimera\Renderer\Buffer.cpp">
       <Filter>src\Chimera\Renderer</Filter>
@@ -1529,6 +1586,12 @@
     <ClCompile Include="src\Chimera\Scene\SceneSerializer.cpp">
       <Filter>src\Chimera\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chimera\Scripting\LuaManager.cpp">
+      <Filter>src\Chimera\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Scripting\LuaScriptComponent.cpp">
+      <Filter>src\Chimera\Scripting</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
@@ -1568,11 +1631,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chimera\Physics\Physics2DDebugDraw.cpp" />
-    <ClCompile Include="src\Chimera\Physics\BoxCollider2D.cpp" />
-    <ClCompile Include="src\Chimera\Physics\RigidBody2D.cpp" />
-    <ClCompile Include="src\Chimera\Physics\Collider2D.cpp" />
-    <ClCompile Include="src\Chimera\Physics\CircleCollider2D.cpp" />
-    <ClCompile Include="src\Chimera\Physics\ContactListener2D.cpp" />
   </ItemGroup>
 </Project>

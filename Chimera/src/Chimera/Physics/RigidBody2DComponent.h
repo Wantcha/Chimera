@@ -7,16 +7,16 @@
 namespace Chimera
 {
 
-	class RigidBody2D
+	class RigidBody2DComponent
 	{
 	public:
 		enum class Body2DType { Static = 0, Dynamic = 1, Kinematic = 2 };
 
 	public:
-		RigidBody2D() = default;
-		~RigidBody2D() = default;
+		RigidBody2DComponent() = default;
+		~RigidBody2DComponent() = default;
 
-		RigidBody2D(b2Body* body, Body2DType type = Body2DType::Dynamic, float gravityScale = 1.0f, bool discreteCollision = true, bool fixedRotation = false);
+		RigidBody2DComponent(b2Body* body, Body2DType type = Body2DType::Dynamic, float gravityScale = 1.0f, bool discreteCollision = true, bool fixedRotation = false);
 
 		void SetBody(b2Body* body) { m_Body = body; }
 

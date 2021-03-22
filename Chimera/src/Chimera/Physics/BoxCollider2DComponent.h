@@ -4,15 +4,15 @@
 
 namespace Chimera
 {
-	class CircleCollider2D : public Collider2D
+	class BoxCollider2DComponent : public Collider2D
 	{
 	public:
-		CircleCollider2D() = default;
-		CircleCollider2D(const CircleCollider2D& other)
+		BoxCollider2DComponent() = default;
+		BoxCollider2DComponent(const BoxCollider2DComponent& other)
 		{
-			CM_CORE_ERROR("Copying CircleCollider2D...");
+			CM_CORE_ERROR("Copying BoxCollider2DComponent...");
 			m_Body = other.m_Body;
-			m_CircleColliderShape = other.m_CircleColliderShape;
+			m_BoxColliderShape = other.m_BoxColliderShape;
 			m_ToBeDestroyed = other.m_ToBeDestroyed;
 			m_Bounciness = other.m_Bounciness;
 			m_CenterX = other.m_CenterX;
@@ -21,25 +21,26 @@ namespace Chimera
 			m_IsSensor = other.m_IsSensor;
 			m_Fixture = other.m_Fixture;
 			m_FixtureDef = other.m_FixtureDef;
-			m_Radius = other.m_Radius;
+			m_Width = other.m_Width;
+			m_Height = other.m_Height;
 			m_Density = other.m_Density;
 			m_FixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 
-			m_CircleColliderShape.m_p.Set(m_CenterX, m_CenterY);
-			m_CircleColliderShape.m_radius = m_Radius;
-			m_FixtureDef.shape = &m_CircleColliderShape;
+			m_BoxColliderShape.SetAsBox(m_Width / 2.0f, m_Height / 2.0f, { m_CenterX, m_CenterY }, 0.0f);
+			m_FixtureDef.shape = &m_BoxColliderShape;
 			UpdateFixtureDef();
+
 			if (!m_ToBeDestroyed)
 			{
 				UpdateFixture();
 			}
 			//m_Fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(this);
 		}
-		CircleCollider2D(CircleCollider2D&& other) noexcept
+		BoxCollider2DComponent(BoxCollider2DComponent&& other) noexcept
 		{
-			CM_CORE_ERROR("Moving CircleCollider2D...");
+			CM_CORE_ERROR("Moving BoxCollider2DComponent...");
 			m_Body = other.m_Body;
-			m_CircleColliderShape = other.m_CircleColliderShape;
+			m_BoxColliderShape = other.m_BoxColliderShape;
 			m_ToBeDestroyed = other.m_ToBeDestroyed;
 			m_Bounciness = other.m_Bounciness;
 			m_CenterX = other.m_CenterX;
@@ -48,13 +49,13 @@ namespace Chimera
 			m_IsSensor = other.m_IsSensor;
 			m_Fixture = other.m_Fixture;
 			m_FixtureDef = other.m_FixtureDef;
-			m_Radius = other.m_Radius;
+			m_Width = other.m_Width;
+			m_Height = other.m_Height;
 			m_Density = other.m_Density;
 			m_FixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 
-			m_CircleColliderShape.m_p.Set(m_CenterX, m_CenterY);
-			m_CircleColliderShape.m_radius = m_Radius;
-			m_FixtureDef.shape = &m_CircleColliderShape;
+			m_BoxColliderShape.SetAsBox(m_Width / 2.0f, m_Height / 2.0f, { m_CenterX, m_CenterY }, 0.0f);
+			m_FixtureDef.shape = &m_BoxColliderShape;
 			UpdateFixtureDef();
 			if (!m_ToBeDestroyed)
 			{
@@ -65,25 +66,30 @@ namespace Chimera
 			other.m_Body = nullptr;
 			other.m_Fixture = nullptr;
 		}
-
-		virtual ~CircleCollider2D() = default;
-		CircleCollider2D(b2Body* body, float radius, bool isSensor = false, float friction = 0.3f, float bounciness = 0.0f, float density = 1.0f);
+		virtual ~BoxCollider2DComponent() = default;
+		BoxCollider2DComponent(b2Body* body, float width, float height, bool isSensor = false, float friction = 0.3f, float bounciness = 0.0f, float density = 1.0f);
 
 		virtual void SetCenter(float x, float y) override;
-		virtual void SetCenter(glm::vec3 center) override { SetCenter(center.x, center.y); }
-
-		void SetRadius(float radius) { m_Radius = radius; m_CircleColliderShape.m_radius = radius; UpdateFixture(); }
+		virtual void SetCenter(glm::vec2 center) override { SetCenter(center.x, center.y); }
+		void SetSize(float width, float height);
+		void SetSize(glm::vec2 size) { SetSize(size.x, size.y); };
+		void SetWidth(float width) { SetSize(width, m_Height); }
+		void SetHeight(float height) { SetSize(m_Width, height); }
 
 		virtual Collider2D* GetCollider() override { return this; }
-		float GetRadius() { return m_Radius; }
+		glm::vec2 GetSize() { return { m_Width, m_Height }; }
+		float GetWidth() { return m_Width; }
+		float GetHeight() { return m_Height; }
 
-		CircleCollider2D& operator=(const CircleCollider2D& other)
+		b2PolygonShape& GetBoxShape() { return m_BoxColliderShape; }
+
+		BoxCollider2DComponent& operator=(const BoxCollider2DComponent& other)
 		{
-			CM_CORE_ERROR("Copying Operation CircleCollider2D...");
+			CM_CORE_ERROR("Copying Operation BoxCollider2DComponent...");
 			if (this != &other)
 			{
 				m_Body = other.m_Body;
-				m_CircleColliderShape = other.m_CircleColliderShape;
+				m_BoxColliderShape = other.m_BoxColliderShape;
 				m_ToBeDestroyed = other.m_ToBeDestroyed;
 				m_Bounciness = other.m_Bounciness;
 				m_CenterX = other.m_CenterX;
@@ -92,13 +98,13 @@ namespace Chimera
 				m_IsSensor = other.m_IsSensor;
 				m_Fixture = other.m_Fixture;
 				m_FixtureDef = other.m_FixtureDef;
-				m_Radius = other.m_Radius;
+				m_Width = other.m_Width;
+				m_Height = other.m_Height;
 				m_Density = other.m_Density;
 				m_FixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 
-				m_CircleColliderShape.m_p.Set(m_CenterX, m_CenterY);
-				m_CircleColliderShape.m_radius = m_Radius;
-				m_FixtureDef.shape = &m_CircleColliderShape;
+				m_BoxColliderShape.SetAsBox(m_Width / 2.0f, m_Height / 2.0f, { m_CenterX, m_CenterY }, 0.0f);
+				m_FixtureDef.shape = &m_BoxColliderShape;
 				UpdateFixtureDef();
 				if (!m_ToBeDestroyed)
 				{
@@ -109,13 +115,13 @@ namespace Chimera
 			return *this;
 		}
 
-		CircleCollider2D& operator=(CircleCollider2D&& other) noexcept
+		BoxCollider2DComponent& operator=(BoxCollider2DComponent&& other) noexcept
 		{
-			CM_CORE_ERROR("Moving Operation CircleCollider2D...");
+			CM_CORE_ERROR("Moving Operation BoxCollider2DComponent...");
 			if (this != &other)
 			{
 				m_Body = other.m_Body;
-				m_CircleColliderShape = other.m_CircleColliderShape;
+				m_BoxColliderShape = other.m_BoxColliderShape;
 				m_ToBeDestroyed = other.m_ToBeDestroyed;
 				m_Bounciness = other.m_Bounciness;
 				m_CenterX = other.m_CenterX;
@@ -124,18 +130,19 @@ namespace Chimera
 				m_IsSensor = other.m_IsSensor;
 				m_Fixture = other.m_Fixture;
 				m_FixtureDef = other.m_FixtureDef;
-				m_Radius = other.m_Radius;
+				m_Width = other.m_Width;
+				m_Height = other.m_Height;
 				m_Density = other.m_Density;
 				m_FixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 
-				m_CircleColliderShape.m_p.Set(m_CenterX, m_CenterY);
-				m_CircleColliderShape.m_radius = m_Radius;
-				m_FixtureDef.shape = &m_CircleColliderShape;
+				m_BoxColliderShape.SetAsBox(m_Width / 2.0f, m_Height / 2.0f, { m_CenterX, m_CenterY }, 0.0f);
+				m_FixtureDef.shape = &m_BoxColliderShape;
 				UpdateFixtureDef();
 				if (!m_ToBeDestroyed)
 				{
 					UpdateFixture();
 				}
+				
 				//m_Fixture->GetUserData().pointer = reinterpret_cast<uintptr_t>(this);
 
 				other.m_Body = nullptr;
@@ -146,7 +153,7 @@ namespace Chimera
 	private:
 		virtual void UpdateFixture() override;
 
-		float m_Radius = 0.5f;
-		b2CircleShape m_CircleColliderShape;
+		b2PolygonShape m_BoxColliderShape;
+		float m_Width = 0.5f, m_Height = 0.5f;
 	};
 }

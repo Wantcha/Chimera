@@ -40,7 +40,9 @@ project "Chimera"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.box2d}"
+		"%{IncludeDir.box2d}",
+		"%{IncludeDir.Lua}",
+		"%{IncludeDir.sol2}"
 	}
 
 	links
@@ -50,8 +52,10 @@ project "Chimera"
 		"ImGui",
 		"yaml-cpp",
 		"box2d",
+		"Lua",
 		"opengl32.lib",
 	}
+	buildoptions {"/bigobj"}
 
 	filter "files:vendor/ImGuizmo/**.cpp"
 	flags { "NoPCH" }

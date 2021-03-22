@@ -81,7 +81,7 @@
     <None Include="..\..\Chimera\premake5.lua" />
     <None Include="..\..\Chimera\vendor\GLFW\premake5.lua" />
     <None Include="..\..\Chimera\vendor\Glad\premake5.lua" />
-    <None Include="..\..\Chimera\vendor\ImGuizmo\premake5.lua" />
+    <None Include="..\..\Chimera\vendor\Lua\premake5.lua" />
     <None Include="..\..\Chimera\vendor\box2d\premake5.lua" />
     <None Include="..\..\Chimera\vendor\imgui\premake5.lua" />
     <None Include="..\..\Chimera\vendor\yaml-cpp\premake5.lua" />

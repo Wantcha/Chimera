@@ -153,6 +153,10 @@ namespace Chimera
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
+		for (int i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			s_Data.TextureSlots[i] = nullptr;
+		}
 		s_Data.TextureSlotIndex = 1;
 	}
 
@@ -168,6 +172,7 @@ namespace Chimera
 		{
 			s_Data.TextureSlots[i]->Bind(i);
 		}
+		CM_CORE_ERROR((void*)s_Data.QuadVertexArray.get());
 		s_Data.QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 		s_Data.Stats.DrawCalls++;
@@ -257,7 +262,7 @@ namespace Chimera
 			NextBatch();
 		}
 
-		const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		//const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		float textureIndex = 0.0f;
 
@@ -283,7 +288,7 @@ namespace Chimera
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
+			s_Data.QuadVertexBufferPtr->Color = tintColor;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
@@ -309,7 +314,7 @@ namespace Chimera
 			NextBatch();
 		}
 
-		const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		//const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		float textureIndex = 0.0f;
 
@@ -335,7 +340,7 @@ namespace Chimera
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
 			s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.QuadVertexBufferPtr->Color = color;
+			s_Data.QuadVertexBufferPtr->Color = tintColor;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;

@@ -5,7 +5,7 @@
 #include "Chimera/Core/Timestep.h"
 #include "Chimera/Renderer/EditorCamera.h"
 #include "Chimera/Physics/Physics2DDebugDraw.h"
-#include "Chimera/Physics/RigidBody2D.h"
+#include "Chimera/Physics/RigidBody2DComponent.h"
 #include "Chimera/Physics/ContactListener2D.h"
 
 namespace Chimera
@@ -22,6 +22,7 @@ namespace Chimera
 		void DestroyEntity(Entity entity);
 
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
+		void OnFixedUpdateEditor(float fixedts);
 		void OnUpdateRuntime(Timestep ts);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
@@ -49,6 +50,7 @@ namespace Chimera
 		friend class Entity;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
-		friend class RigidBody2D;
+		friend class RigidBody2DComponent;
+		friend class LuaManager;
 	};
 }

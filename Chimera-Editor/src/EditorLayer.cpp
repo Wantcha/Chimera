@@ -22,6 +22,7 @@ namespace Chimera
 	{
 		CM_PROFILE_FUNCTION();
 
+		//AssetManager::GetAsset<Texture2D>("assets/textures/laurgras.png");
 		//m_LaurTexture = Texture2D::Create("assets/textures/laurgras.png");
 
 		FramebufferSpecification fbSpec;
@@ -33,6 +34,15 @@ namespace Chimera
 		m_ActiveScene = CreateRef<Scene>();
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+
+		//auto scriptEntity = m_ActiveScene->CreateEntity("Unu");
+		//scriptEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+		//auto secondEntity = m_ActiveScene->CreateEntity("Doi");
+		//secondEntity.AddComponent<SpriteRendererComponent>();
+		//secondEntity.GetComponent<TransformComponent>().Position = glm::vec3(1.0f, 1.5f, 0.0f);
+		//secondEntity.GetComponent<TransformComponent>().SetParent(scriptEntity);
+		//scriptEntity.AddComponent<CameraComponent>();
+		//scriptEntity.AddComponent<LuaScriptComponent>("H:/Programming/Chimera/Chimera-Editor/assets/scripts/SampleScript.lua");
 
 		/*auto square = m_ActiveScene->CreateEntity("Green Square");
 		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
@@ -153,16 +163,21 @@ namespace Chimera
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
 
-		if (mouseX >= 0 && mouseY >= 0 && mouseX <= (int)viewportSize.x && mouseY <= (int)viewportSize.y && Input::IsMouseButtonPressed(0))
+		if (mouseX >= 0 && mouseY >= 0 && mouseX <= (int)viewportSize.x && mouseY <= (int)viewportSize.y)
 		{
 
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_SceneHierarchyPanel.SetSelectedEntity(pixelData);
-			CM_CORE_INFO("{0}", pixelData);
+			m_HoveredEntity = pixelData <= -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
+			//CM_CORE_INFO("{0}", pixelData);
 			//CM_CORE_INFO("{0}, {1}", mouseX, mouseY);
 		}
 
 		m_Framebuffer->Unbind();
+	}
+
+	void EditorLayer::OnFixedUpdate(float fixedts)
+	{
+		m_ActiveScene->OnFixedUpdateEditor(fixedts);
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -266,9 +281,11 @@ namespace Chimera
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
 
-		// Retarded function name if you ask me, don't know why it's called "Cursor"
-		auto viewportOffset = ImGui::GetCursorPos(); // position from which the window is drawn, aka starting from the under the tab bar (basically an offset into the window)
-		//CM_CORE_WARN("{0}, {1}", viewportOffset.x, viewportOffset.y);
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();
+		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
@@ -282,16 +299,7 @@ namespace Chimera
 		m_ViewportSize = { viewportPanelSize.x,  viewportPanelSize.y };
 		
 		uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-
-		auto windowSize = ImGui::GetWindowSize();
-		ImVec2 minBound = ImGui::GetWindowPos();
-		//minBound.x += viewportOffset.x;
-		//minBound.y += viewportOffset.y;
-
-		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-		m_ViewportBounds[0] = { minBound.x, minBound.y };
-		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		//Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -299,9 +307,8 @@ namespace Chimera
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-			float windowWidth = (float)ImGui::GetWindowWidth();
-			float windowHeight = (float)ImGui::GetWindowHeight();
-			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 			// Runtime camera from entity
 			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
@@ -336,17 +343,6 @@ namespace Chimera
 				tc.Position = position;
 				tc.Rotation += deltaRotation;
 				tc.Scale = scale;
-
-				/*if (selectedEntity.HasComponent<Body2DComponent>())
-				{
-					auto& rb = selectedEntity.GetComponent<Body2DComponent>().Body;
-					//rb->SetTransform({ position.x, position.y }, rb->GetTransform().q.GetAngle() + deltaRotation.z);
-					if (selectedEntity.HasComponent<BoxCollider2DComponent>())
-					{
-						BoxCollider2D& collider = selectedEntity.GetComponent<BoxCollider2DComponent>().BoxCollider;
-						collider.SetSize(scale.x, scale.y);
-					}
-				}*/
 			}
 		}
 
@@ -366,7 +362,8 @@ namespace Chimera
 		m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<KeyPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		//dispatcher.Dispatch<KeyPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 	}
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
@@ -411,6 +408,15 @@ namespace Chimera
 				m_GizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
 		}
+	}
+	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		if (e.GetMouseButton() == 0)
+		{
+			if(m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+		}
+		return false;
 	}
 	void EditorLayer::NewScene()
 	{

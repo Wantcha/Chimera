@@ -1,9 +1,9 @@
 #include "cmpch.h"
-#include "BoxCollider2D.h"
+#include "BoxCollider2DComponent.h"
 
 namespace Chimera
 {
-	BoxCollider2D::BoxCollider2D(b2Body* body, float width, float height, bool isSensor, float friction, float bounciness, float density)
+	BoxCollider2DComponent::BoxCollider2DComponent(b2Body* body, float width, float height, bool isSensor, float friction, float bounciness, float density)
 		: Collider2D{ body, isSensor, friction, bounciness, density }, m_Width(width), m_Height(height)
 	{
 		m_BoxColliderShape.SetAsBox(m_Width / 2.0f, m_Height / 2.0f);
@@ -11,7 +11,7 @@ namespace Chimera
 		
 		m_Fixture = m_Body->CreateFixture(&m_FixtureDef);
 	}
-	void BoxCollider2D::SetSize(float width, float height)
+	void BoxCollider2DComponent::SetSize(float width, float height)
 	{
 		m_Width = width;
 		m_Height = height;
@@ -20,7 +20,7 @@ namespace Chimera
 
 		UpdateFixture();
 	}
-	void BoxCollider2D::SetCenter(float x, float y)
+	void BoxCollider2DComponent::SetCenter(float x, float y)
 	{
 		m_CenterX = x;
 		m_CenterY = y;
@@ -29,7 +29,7 @@ namespace Chimera
 
 		UpdateFixture();
 	}
-	void BoxCollider2D::UpdateFixture()
+	void BoxCollider2DComponent::UpdateFixture()
 	{
 		m_Body->DestroyFixture(m_Fixture);
 		m_Fixture = m_Body->CreateFixture(&m_FixtureDef);

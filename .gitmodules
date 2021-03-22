@@ -10,3 +10,6 @@
 [submodule "Chimera/vendor/GLFW"]
 	path = Chimera/vendor/GLFW
 	url = https://github.com/Wantcha/glfw
+[submodule "Chimera/vendor/sol2"]
+	path = Chimera/vendor/sol2
+	url = https://github.com/ThePhD/sol2
