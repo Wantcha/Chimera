@@ -23,6 +23,13 @@ namespace Chimera
 		m_World->SetContactListener(&m_ContactListener);
 
 		LuaManager::Get().Init(this);
+		/*m_Registry.each([&](auto entityID)
+			{
+				Entity entity = { entityID, this };
+				if (entity.GetComponent<TransformComponent>().Parent == nullptr)
+					m_RootEntityList.push_back(entity);
+			}
+		);*/
 		// LuaManager::Get().InitScripts();
 		
 
@@ -58,7 +65,6 @@ namespace Chimera
 	}
 	Scene::~Scene()
 	{
-
 	}
 	Entity Scene::CreateEntity(const std::string& name)
 	{
@@ -67,27 +73,40 @@ namespace Chimera
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Name = name.empty() ? "New Entity" : name;
 		
+		m_RootEntityList.push_back(entity);
+
 		return entity;
 	}
 	void Scene::DestroyEntity(Entity entity)
 	{
+		auto parent = entity.GetComponent<TransformComponent>().GetParent();
+		if(parent == nullptr)
+			RemoveRootEntity(entity);
+		else
+		{
+			std::vector<Entity>& entitySiblings = parent.GetComponent<TransformComponent>().GetChildren();
+
+			std::vector<Entity>::iterator position = std::find(entitySiblings.begin(), entitySiblings.end(), entity);
+			if (position != entitySiblings.end())
+				entitySiblings.erase(position);
+		}
 		m_Registry.destroy(entity);
 	}
 	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
 	{
+		LuaManager::Get().UpdateScripts(ts);
+
 		auto physicsGroup = m_Registry.group<>(entt::get<TransformComponent, Body2DComponent>);
 		for (auto entity : physicsGroup)
 		{
 			// TODO Check maybe if entity is enabled first
 			auto [transform, bc] = physicsGroup.get<TransformComponent, Body2DComponent>(entity);
 
-			bc.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
+			bc.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 			
 			//Entity* userData = reinterpret_cast<Entity*>(rb.RigidBody.GetBody()->GetUserData().pointer);
 			//CM_CORE_WARN("{0}", (uint32_t) *userData);
 		}
-
-		LuaManager::Get().UpdateScripts(ts);
 
 
 		Renderer2D::BeginScene(camera);
@@ -98,7 +117,7 @@ namespace Chimera
 			auto [transform, sprite, tag] = group.get<TransformComponent, SpriteRendererComponent, TagComponent>(entity);
 
 			if (tag.Enabled)
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				Renderer2D::DrawSprite(transform.GetGlobalTransform(), sprite, (int)entity);
 		}
 
 		/*auto body = m_World->GetBodyList();
@@ -137,8 +156,8 @@ namespace Chimera
 		{
 			Entity* e = reinterpret_cast<Entity*>(body->GetUserData().pointer);
 			TransformComponent& tc = e->GetComponent<TransformComponent>();
-			tc.Position = { body->GetPosition().x, body->GetPosition().y, tc.Position.z };
-			tc.Rotation.z = body->GetAngle();
+			tc.SetPosition({ body->GetPosition().x, body->GetPosition().y, tc.GetPosition().z });
+			tc.SetRotation({ tc.GetRotation().x, tc.GetRotation().y, body->GetAngle() });
 			body = body->GetNext();
 		}
 	}
@@ -221,6 +240,23 @@ namespace Chimera
 		return {};
 	}
 
+	void Scene::PushRootEntity(Entity entity)
+	{
+		m_RootEntityList.push_back(entity);
+	}
+
+	void Scene::InsertRootEntity(Entity entity, std::vector<Entity>::iterator position)
+	{
+		m_RootEntityList.insert(position, entity);
+	}
+
+	void Scene::RemoveRootEntity(Entity entity)
+	{
+		std::vector<Entity>::iterator position = std::find(m_RootEntityList.begin(), m_RootEntityList.end(), entity);
+		if (position != m_RootEntityList.end())
+			m_RootEntityList.erase(position);
+	}
+
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
@@ -236,7 +272,7 @@ namespace Chimera
 	template<>
 	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
 	{
-
+		component.SetEntity(entity);
 	}
 
 	template<>
@@ -263,9 +299,9 @@ namespace Chimera
 			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component);
 
 			component.SetBody(body.Body);
-			component.SetSize(transform.Scale.x, transform.Scale.y);
+			component.SetSize(transform.GetScale().x, transform.GetScale().y);
 
-			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
+			body.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 			++body.ColliderCount;
 		}
 
@@ -289,11 +325,11 @@ namespace Chimera
 
 
 			component.SetBody(body.Body);
-			component.SetSize(transform.Scale.x, transform.Scale.y);
+			component.SetSize(transform.GetScale().x, transform.GetScale().y);
 
 			//Collider2D* colliderA = (Collider2D*)component.BoxCollider.GetFixtureDef().userData.pointer;
 
-			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
+			body.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 			++body.ColliderCount;
 		}
 	}
@@ -310,15 +346,14 @@ namespace Chimera
 			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component);
 
 			component.SetBody(body.Body);
-			component.SetRadius(transform.Scale.x / 2.0f);
+			component.SetRadius(transform.GetScale().x / 2.0f);
 
-			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
+			body.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 			++body.ColliderCount;
 		}
 
 		else
 		{
-			//CM_CORE_INFO("Lol");
 			Body2DComponent& body = entity.AddComponent<Body2DComponent>();
 
 			b2BodyDef bodyDef;
@@ -335,9 +370,9 @@ namespace Chimera
 			component.GetFixtureDef().userData.pointer = reinterpret_cast<uintptr_t>(&component);
 
 			component.SetBody(body.Body);
-			component.SetRadius(transform.Scale.x / 2.0f);
+			component.SetRadius(transform.GetScale().x / 2.0f);
 
-			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
+			body.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 			++body.ColliderCount;
 		}
 		
@@ -374,7 +409,7 @@ namespace Chimera
 			//Entity* userData = reinterpret_cast<Entity*>(body.Body->GetUserData().pointer);
 
 			auto transform = entity.GetComponent<TransformComponent>();
-			body.Body->SetTransform({ transform.Position.x, transform.Position.y }, transform.Rotation.z);
+			body.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 
 			component.SetBody(body.Body);
 

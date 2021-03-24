@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Chimera/Math/Math.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
@@ -35,43 +36,120 @@ namespace Chimera
 		std::string GetName() { return Name; }
 	};
 
-	struct TransformComponent
+	class TransformComponent
 	{
-		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
-
-
-		TransformComponent() = default;
+	public:
+		TransformComponent() {};
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::vec3& position)
-			: Position(Position) {}
+			: m_Position(position) {}
 
-		/*Entity Parent;
-		glm::mat4 WorldMatrix = glm::mat4(1.0f);
-		std::vector<Entity> Children;*/
+		void SetPosition(glm::vec3 pos) { m_Position = pos; RecalcLocalTransform(); /*CM_CORE_ERROR("LOL");*/ }
+		void SetRotation(glm::vec3 rot) { m_Rotation = rot; RecalcLocalTransform(); }
+		void SetScale(glm::vec3 scale) { m_Scale = scale; RecalcLocalTransform(); }
+
+		glm::vec3 GetPosition() const { return m_Position; }
+		glm::vec3 GetRotation() const { return m_Rotation; }
+		glm::vec3 GetScale() const { return m_Scale; }
 
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::mat4 rotation = glm::toMat4(glm::quat(m_Rotation));
 
-			return glm::translate(glm::mat4(1.0f), Position) * rotation * glm::scale(glm::mat4(1.0f), Scale);
+			return glm::translate(glm::mat4(1.0f), m_Position) * rotation * glm::scale(glm::mat4(1.0f), m_Scale);
+			//return m_Transform;
 		}
-		/*glm::mat4 GetGlobalTransform()
+		glm::mat4 GetGlobalTransform()
 		{
-			//return Parent.IsNull() ? GetTransform() : WorldMatrix * GetTransform();
+			return m_Parent.IsNull() ? GetTransform() : m_Parent.GetComponent<TransformComponent>().GetGlobalTransform() * GetTransform();
 		}
 
-		void SetParent(Entity parent)
+		void SetParent(Entity newParent)
 		{
-			Parent = parent;
-			WorldMatrix = parent.GetComponent<TransformComponent>().GetGlobalTransform();
+			/*std::vector<Entity>::iterator position = std::find(m_Children.begin(), m_Children.end(), newParent);
+			if (position != m_Children.end())
+				return;*/
+
+			if (m_Parent != nullptr)
+			{
+				std::vector<Entity>& children = m_Parent.GetComponent<TransformComponent>().m_Children;
+
+				std::vector<Entity>::iterator position = std::find(children.begin(), children.end(), m_CurrentEntity);
+				if (position != children.end())
+					children.erase(position);
+			}
+
+			if (newParent != nullptr)
+			{
+				if (IsAlreadyUpTheHierarchy(m_CurrentEntity, newParent))
+				{
+					for (Entity& child : m_Children)
+						child.GetComponent<TransformComponent>().SetParent(m_Parent);
+				}
+
+				m_Parent = newParent;
+				glm::mat4 newTransform = glm::inverse(newParent.GetComponent<TransformComponent>().GetGlobalTransform()) * GetTransform();
+				Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);
+				m_CurrentEntity.RemoveRootNode();
+
+				newParent.GetComponent<TransformComponent>().GetChildren().push_back(m_CurrentEntity);
+			}
+			else
+			{
+				if (m_Parent != nullptr)
+				{
+					m_Parent = nullptr;
+					m_CurrentEntity.MakeRootNode();
+				}	
+			}
 		}
 
 		inline Entity GetParent()
 		{
-			return Parent;
-		}*/
+			return m_Parent;
+		}
+
+		inline void SetEntity(Entity e)
+		{
+			m_CurrentEntity = e;
+		}
+		inline Entity GetEntity() const
+		{
+			return m_CurrentEntity;
+		}
+		inline void PushChild(Entity entity)
+		{
+			m_Children.push_back(entity);
+		}
+		std::vector<Entity>& GetChildren() { return m_Children; }
+
+	private:
+		bool IsAlreadyUpTheHierarchy(Entity entityToCheck, Entity entity)
+		{
+			Entity newParent = entity.GetComponent<TransformComponent>().GetParent();
+			if (newParent == nullptr)
+				return false;
+			if (newParent == entityToCheck)
+				return true;
+			return IsAlreadyUpTheHierarchy(entityToCheck, newParent);
+		}
+
+		void RecalcLocalTransform()
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(m_Rotation));
+
+			m_Transform = glm::translate(glm::mat4(1.0f), m_Position) * rotation * glm::scale(glm::mat4(1.0f), m_Scale);
+		}
+
+		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_Rotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_Scale = { 1.0f, 1.0f, 1.0f };
+		glm::mat4 m_Transform = glm::mat4(1.0f);
+
+		Entity m_CurrentEntity;
+		Entity m_Parent;
+		glm::mat4 m_WorldMatrix = glm::mat4(1.0f);
+		std::vector<Entity> m_Children;
 	};
 
 	struct SpriteRendererComponent

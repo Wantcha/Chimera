@@ -60,6 +60,9 @@
     <None Include="..\..\Chimera\vendor\imgui\premake5.lua">
       <Filter>..\Chimera\vendor\imgui</Filter>
     </None>
+    <None Include="..\..\Chimera\vendor\premake5.lua">
+      <Filter>..\Chimera\vendor</Filter>
+    </None>
     <None Include="..\..\Chimera\vendor\yaml-cpp\premake5.lua">
       <Filter>..\Chimera\vendor\yaml-cpp</Filter>
     </None>

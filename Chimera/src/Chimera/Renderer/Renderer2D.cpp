@@ -172,7 +172,6 @@ namespace Chimera
 		{
 			s_Data.TextureSlots[i]->Bind(i);
 		}
-		CM_CORE_ERROR((void*)s_Data.QuadVertexArray.get());
 		s_Data.QuadVertexArray->Bind();
 		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 		s_Data.Stats.DrawCalls++;

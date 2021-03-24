@@ -29,6 +29,10 @@ namespace Chimera
 
 		Entity GetPrimaryCameraEntity();
 
+		void PushRootEntity(Entity entity);
+		void InsertRootEntity(Entity entity, std::vector<Entity>::iterator position);
+		void RemoveRootEntity(Entity entity);
+
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
@@ -37,6 +41,7 @@ namespace Chimera
 		void OnComponentRemoved(Entity entity, T& component);
 
 		entt::registry m_Registry;
+		std::vector<Entity> m_RootEntityList;
 
 		Scope<b2World> m_World;
 		std::stack<b2Body*> m_DestructionStack;

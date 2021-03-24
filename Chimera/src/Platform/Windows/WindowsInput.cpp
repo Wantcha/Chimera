@@ -6,7 +6,7 @@
 
 namespace Chimera
 {
-	bool Input::m_PressedKeys[255] = { 0 };
+	bool Input::m_PressedKeys[1024] = { 0 };
 
 	bool Input::IsKeyDown(int keycode)
 	{

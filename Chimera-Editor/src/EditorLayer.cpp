@@ -35,12 +35,20 @@ namespace Chimera
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
-		//auto scriptEntity = m_ActiveScene->CreateEntity("Unu");
-		//scriptEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
-		//auto secondEntity = m_ActiveScene->CreateEntity("Doi");
-		//secondEntity.AddComponent<SpriteRendererComponent>();
-		//secondEntity.GetComponent<TransformComponent>().Position = glm::vec3(1.0f, 1.5f, 0.0f);
+		auto scriptEntity = m_ActiveScene->CreateEntity("Unu");
+		scriptEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+
+		auto secondEntity = m_ActiveScene->CreateEntity("Doi");
+		secondEntity.AddComponent<SpriteRendererComponent>();
+		secondEntity.GetComponent<TransformComponent>().SetPosition(glm::vec3(1.0f, 1.5f, 0.0f));
 		//secondEntity.GetComponent<TransformComponent>().SetParent(scriptEntity);
+
+		auto thirdEntity = m_ActiveScene->CreateEntity("Trei");
+		thirdEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);;
+		thirdEntity.GetComponent<TransformComponent>().SetPosition(glm::vec3(-2.5f, -0.5f, 0.0f));
+		//thirdEntity.GetComponent<TransformComponent>().SetParent(secondEntity);
+
+
 		//scriptEntity.AddComponent<CameraComponent>();
 		//scriptEntity.AddComponent<LuaScriptComponent>("H:/Programming/Chimera/Chimera-Editor/assets/scripts/SampleScript.lua");
 
@@ -195,8 +203,8 @@ namespace Chimera
 		if (opt_fullscreen)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->GetWorkPos());
-			ImGui::SetNextWindowSize(viewport->GetWorkSize());
+			ImGui::SetNextWindowPos(viewport->WorkPos);
+			ImGui::SetNextWindowSize(viewport->WorkSize);
 			ImGui::SetNextWindowViewport(viewport->ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -321,7 +329,12 @@ namespace Chimera
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
+			glm::mat4& transform = tc.GetGlobalTransform();
+			glm::mat4& localTransform = tc.GetTransform();
+			glm::mat4& parentTransform = glm::mat4(1.0f);
+			if(tc.GetParent())
+				parentTransform = tc.GetParent().GetComponent<TransformComponent>().GetGlobalTransform();
+			//transform =  transform;
 
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
@@ -336,13 +349,14 @@ namespace Chimera
 
 			if (ImGuizmo::IsUsing())
 			{
+				transform = glm::inverse(parentTransform) * transform;
 				glm::vec3 position, rotation, scale;
 				Math::DecomposeTransform(transform, position, rotation, scale);
 
-				glm::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Position = position;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
+				glm::vec3 deltaRotation = rotation - tc.GetRotation();
+				tc.SetPosition(position);
+				tc.SetRotation (tc.GetRotation() + deltaRotation);
+				tc.SetScale(scale);
 			}
 		}
 
@@ -362,7 +376,7 @@ namespace Chimera
 		m_EditorCamera.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
-		//dispatcher.Dispatch<KeyPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<KeyPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 	}
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)

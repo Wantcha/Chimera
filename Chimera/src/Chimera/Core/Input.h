@@ -23,6 +23,6 @@ namespace Chimera
 		static float GetMouseY();
 		static std::pair<float, float> GetMousePosition();
 	private:
-		static bool m_PressedKeys[255];
+		static bool m_PressedKeys[1024];
 	};
 }

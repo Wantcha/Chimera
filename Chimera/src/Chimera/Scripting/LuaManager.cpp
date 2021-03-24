@@ -108,9 +108,9 @@ namespace Chimera
 
 
 		auto transformComponent_type = m_State.new_usertype<TransformComponent>("TransformComponent", sol::no_constructor,
-			"position", &TransformComponent::Position,
-			"rotation", &TransformComponent::Rotation,
-			"scale", &TransformComponent::Scale);
+			"position", sol::property( &TransformComponent::GetPosition, &TransformComponent::SetPosition),
+			"rotation", sol::property(&TransformComponent::GetRotation, &TransformComponent::SetRotation),
+			"scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale));
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, TransformComponent);
 

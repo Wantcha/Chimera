@@ -25,17 +25,31 @@ namespace Chimera
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
+		
 
-		m_Context->m_Registry.each([&](auto entityID)
-			{
-				Entity entity = { entityID, m_Context.get() };
-				DrawEntityNode(entity);
-			}
-		);
+		for (Entity entity : m_Context->m_RootEntityList)
+		{
+			DrawEntityNode(entity);
+		}
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
 			m_SelectionContext = {};
+		}
+
+		ImGui::BeginChild("Empty Space");
+		ImGui::EndChild();
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Entity"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(Entity));
+				Entity payload_n = *(const Entity*)payload->Data;
+
+				payload_n.GetComponent<TransformComponent>().SetParent({entt::null, nullptr});
+			}
+			ImGui::EndDragDropTarget();
 		}
 
 		// Right-click on blank space
@@ -82,10 +96,60 @@ namespace Chimera
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		auto& name = entity.GetComponent<TagComponent>().Name;
+		std::vector<Entity>& children = entity.GetComponent<TransformComponent>().GetChildren();
 
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.0f, 1.0f });
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+		if (children.empty())
+			flags |= ImGuiTreeNodeFlags_Leaf;
+
+		ImGui::InvisibleButton(name.c_str(), ImVec2{ ImGui::GetContentRegionAvailWidth(), 3.0f });
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Entity"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(Entity));
+				Entity payload_n = *(const Entity*)payload->Data;
+
+				if (payload_n != entity)
+				{
+					auto entityParent = entity.GetComponent<TransformComponent>().GetParent();
+					auto parent = payload_n.GetComponent<TransformComponent>().GetParent();
+
+					if (entityParent != parent)
+						payload_n.GetComponent<TransformComponent>().SetParent(entityParent);
+
+					if (entityParent == nullptr)
+					{
+						m_Context->RemoveRootEntity(payload_n);
+
+						std::vector<Entity>::iterator position = std::find(m_Context->m_RootEntityList.begin(), m_Context->m_RootEntityList.end(), entity);
+						if (position != m_Context->m_RootEntityList.end())
+							m_Context->m_RootEntityList.insert(position, payload_n);
+
+					}
+					else
+					{
+						std::vector<Entity>& entitySiblings = entityParent.GetComponent<TransformComponent>().GetChildren();
+
+						std::vector<Entity>::iterator position = std::find(entitySiblings.begin(), entitySiblings.end(), payload_n);
+						if (position != entitySiblings.end())
+							entitySiblings.erase(position);
+
+						position = std::find(entitySiblings.begin(), entitySiblings.end(), entity);
+						if (position != entitySiblings.end())
+						{
+							entitySiblings.insert(position, payload_n);
+						}
+					}
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
+		ImGui::PopStyleVar();
 
 		if (ImGui::IsItemClicked())
 		{
@@ -103,8 +167,32 @@ namespace Chimera
 			ImGui::EndPopup();
 		}
 
+		ImGui::PushID((uint32_t)entity);
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+		{
+			// Set payload to carry the index of our item (could be anything)
+			ImGui::SetDragDropPayload("Dragged_Entity", &entity, sizeof(Entity));
+			ImGui::EndDragDropSource();
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Entity"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(Entity));
+				Entity payload_n = *(const Entity*)payload->Data;
+
+				payload_n.GetComponent<TransformComponent>().SetParent(entity);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::PopID();
+
 		if (opened)
 		{
+			for (int i = 0; i < children.size(); ++i)
+			{
+				DrawEntityNode(children[i]);
+			}
 			ImGui::TreePop();
 		}
 
@@ -113,11 +201,7 @@ namespace Chimera
 			if (entity.HasComponent<Body2DComponent>())
 			{
 				entity.RemoveComponent<Body2DComponent>();
-				/*Entity* e = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
-				delete e;
-				m_Context->m_World->DestroyBody(entity.GetComponent<Body2DComponent>().Body);*/
 			}
-				
 
 			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity)
@@ -331,12 +415,18 @@ namespace Chimera
 
 			if (open)
 			{
-				glm::vec3 rotation = glm::degrees(component.Rotation);
-				DrawVec3Control("Position", component.Position);
+				glm::vec3 rotation = glm::degrees(component.GetRotation());
+				glm::vec3 position = component.GetPosition();
+				glm::vec3 scale = component.GetScale();
+				DrawVec3Control("Position", position);
+				component.SetPosition(position);
 
 				DrawVec3Control("Rotation", rotation);
-				component.Rotation = glm::radians(rotation);
-				DrawVec3Control("Scale", component.Scale, 1.0f);
+				component.SetRotation(glm::radians(rotation));
+
+				DrawVec3Control("Scale", scale, 1.0f);
+				component.SetScale(scale);
+
 				ImGui::TreePop();
 			}
 		}

@@ -59,11 +59,28 @@ namespace Chimera
 		std::string GetName();
 		void SetName(std::string name);
 
+		bool IsEnabled();
+		void SetEnabled(bool enabled);
+
+		void MakeRootNode()
+		{
+			m_Scene->PushRootEntity(*this);
+		}
+
+		void RemoveRootNode()
+		{
+			m_Scene->RemoveRootEntity(*this);
+		}
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
+		operator std::nullptr_t() const { return m_EntityHandle == entt::null ? nullptr : nullptr ; }
 		operator entt::entity() const { return m_EntityHandle; }
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
+		Entity& operator=(std::nullptr_t) noexcept { m_EntityHandle = entt::null; m_Scene = nullptr ; return *this; }
+		bool operator==(std::nullptr_t) const { return m_EntityHandle == entt::null; }
+		bool operator!=(std::nullptr_t) const { return !(m_EntityHandle == entt::null); }
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
