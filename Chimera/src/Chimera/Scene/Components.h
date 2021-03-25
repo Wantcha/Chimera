@@ -61,7 +61,7 @@ namespace Chimera
 		}
 		glm::mat4 GetGlobalTransform()
 		{
-			return m_Parent.IsNull() ? GetTransform() : m_Parent.GetComponent<TransformComponent>().GetGlobalTransform() * GetTransform();
+			return m_Parent == nullptr ? GetTransform() : m_Parent.GetComponent<TransformComponent>().GetGlobalTransform() * GetTransform();
 		}
 
 		void SetParent(Entity newParent)
@@ -87,20 +87,27 @@ namespace Chimera
 						child.GetComponent<TransformComponent>().SetParent(m_Parent);
 				}
 
+				glm::mat4 oldGlobal = glm::mat4(1.0f);
+				if(m_Parent != nullptr)
+					oldGlobal = m_Parent.GetComponent<TransformComponent>().GetGlobalTransform();
 				m_Parent = newParent;
-				glm::mat4 newTransform = glm::inverse(newParent.GetComponent<TransformComponent>().GetGlobalTransform()) * GetTransform();
-				Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);
-				m_CurrentEntity.RemoveRootNode();
+				glm::mat4 newTransform = glm::inverse(newParent.GetComponent<TransformComponent>().GetGlobalTransform()) * oldGlobal * GetTransform();
 
+				Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);
+
+				m_CurrentEntity.RemoveRootNode();
 				newParent.GetComponent<TransformComponent>().GetChildren().push_back(m_CurrentEntity);
 			}
 			else
 			{
 				if (m_Parent != nullptr)
 				{
+					glm::mat4 newTransform = m_Parent.GetComponent<TransformComponent>().GetGlobalTransform() * GetTransform();
+					Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);
+
 					m_Parent = nullptr;
 					m_CurrentEntity.MakeRootNode();
-				}	
+				}
 			}
 		}
 
@@ -147,14 +154,14 @@ namespace Chimera
 		glm::mat4 m_Transform = glm::mat4(1.0f);
 
 		Entity m_CurrentEntity;
-		Entity m_Parent;
+		Entity m_Parent = nullptr;
 		glm::mat4 m_WorldMatrix = glm::mat4(1.0f);
 		std::vector<Entity> m_Children;
 	};
 
 	struct SpriteRendererComponent
 	{
-		glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
+		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		Ref<Texture2D> SpriteTexture = Texture2D::Create(1, 1);
 
 		SpriteRendererComponent()
@@ -187,7 +194,7 @@ namespace Chimera
 		float GetFOV() { return Camera.GetFOV(); }
 		void SetFOV(float fov) { Camera.SetFOV(fov); }
 		float GetPerspNearClip() const { return Camera.GetPerspNearClip(); }
-		float GetPerspFarClip() const { return Camera.GetPerspFarClip();}
+		float GetPerspFarClip() const { return Camera.GetPerspFarClip(); }
 		void SetPerspNearClip(float nearClip) { Camera.SetPerspNearClip(nearClip); }
 		void SetPerspFarClip(float farClip) { Camera.SetPerspFarClip(farClip); }
 
@@ -252,7 +259,7 @@ namespace Chimera
 		ScriptableEntity* Instance = nullptr;
 
 		ScriptableEntity* (*InstantiateScript)();
-		void ( *DestroyScript)(NativeScriptComponent*);
+		void (*DestroyScript)(NativeScriptComponent*);
 
 		template<typename T>
 		void Bind()

@@ -134,6 +134,22 @@ namespace Chimera
 			out << YAML::Key << "Position" << YAML::Value << tc.GetPosition();
 			out << YAML::Key << "Rotation" << YAML::Value << tc.GetRotation();
 			out << YAML::Key << "Scale" << YAML::Value << tc.GetScale();
+			if(tc.GetParent() == nullptr)
+				out << YAML::Key << "Parent" << YAML::Value << (uint32_t)entt::null;
+			else
+				out << YAML::Key << "Parent" << YAML::Value << (uint32_t)tc.GetParent();
+			
+			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
+			std::vector<Entity>& children = tc.GetChildren();
+			for (Entity child : children)
+			{
+				out << YAML::BeginMap;
+
+				out << YAML::Value << (uint32_t)child;
+
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
 			out << YAML::EndMap;
 		}
 
@@ -260,6 +276,17 @@ namespace Chimera
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
+		out << YAML::Key << "Hierarchy Roots" << YAML::Value << YAML::BeginSeq;
+		std::vector<Entity>& roots = m_Scene->m_RootEntityList;
+		for (Entity root : roots)
+		{
+			out << YAML::BeginMap;
+
+			out << YAML::Value << (uint32_t)root;
+
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 			{
@@ -297,7 +324,7 @@ namespace Chimera
 		{
 			for (auto entity : entities)
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>();
+				uint32_t uuid = entity["Entity"].as<uint32_t>();
 
 				std::string name;
 				bool enabled;
@@ -310,7 +337,7 @@ namespace Chimera
 					
 				CM_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				Entity deserializedEntity = m_Scene->CreateEntityWithID(uuid,name);
 				deserializedEntity.GetComponent<TagComponent>().Enabled = enabled;
 
 				auto transformComponent = entity["TransformComponent"];
@@ -320,6 +347,7 @@ namespace Chimera
 					tc.SetPosition(transformComponent["Position"].as<glm::vec3>());
 					tc.SetRotation(transformComponent["Rotation"].as<glm::vec3>());
 					tc.SetScale(transformComponent["Scale"].as<glm::vec3>());
+					//tc.SetParent(Entity{ (entt::entity)transformComponent["Parent"].as<uint32_t>(), m_Scene.get() });
 				}
 
 				auto cameraComponent = entity["CameraComponent"];
@@ -353,7 +381,6 @@ namespace Chimera
 				if (rigiBody2DComponent)
 				{
 					auto& rb = deserializedEntity.AddComponent<RigidBody2DComponent>();
-					//auto& rbProps = rigiBody2DComponent["RigidBody2DComponent"];
 
 					rb.SetBodyType((RigidBody2DComponent::Body2DType)rigiBody2DComponent["BodyType"].as<int>());
 					rb.SetGravityScale(rigiBody2DComponent["GravityScale"].as<float>());
@@ -365,7 +392,6 @@ namespace Chimera
 				if (boxCollider2DComponent)
 				{
 					auto& box = deserializedEntity.AddComponent<BoxCollider2DComponent>();
-					//auto& boxProps = boxCollider2DComponent["BoxCollider2DComponent"];
 					
 					box.SetCenter(boxCollider2DComponent["ColliderCenter"].as<glm::vec3>());
 					box.SetSize(boxCollider2DComponent["ColliderSize"].as<glm::vec2>());
@@ -378,7 +404,6 @@ namespace Chimera
 				if (circleCollider2DComponent)
 				{
 					auto& cc = deserializedEntity.AddComponent<CircleCollider2DComponent>();
-					//auto& ccProps = circleCollider2DComponent["CircleCollider2DComponent"];
 
 					cc.SetCenter(circleCollider2DComponent["ColliderCenter"].as<glm::vec3>());
 					cc.SetRadius(circleCollider2DComponent["ColliderRadius"].as<float>());
@@ -406,6 +431,36 @@ namespace Chimera
 					}
 				}
 			}
+			for (auto entity : entities)
+			{
+				uint32_t uuid = entity["Entity"].as<uint32_t>();
+				Entity deserializedEntity = Entity{ (entt::entity)uuid, m_Scene.get() };
+
+				auto transformComponent = entity["TransformComponent"];
+				if (transformComponent)
+				{
+					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
+					auto children = transformComponent["Children"];
+					for (auto child : children)
+					{
+						Entity e = Entity{ (entt::entity)child.as<uint32_t>(), m_Scene.get() };
+						e.GetComponent<TransformComponent>().SetParent(deserializedEntity);
+					}
+				}
+			}
+
+		}
+		auto roots = data["Hierarchy Roots"];
+		if (roots)
+		{
+			std::vector<Entity> newOrder;
+			for (auto root : roots)
+			{
+				entt::entity handle = (entt::entity)root.as<uint32_t>();
+				Entity entity = Entity{ handle, m_Scene.get() };
+				newOrder.push_back(entity);
+			}
+			m_Scene->m_RootEntityList = newOrder;
 		}
 		return true;
 	}

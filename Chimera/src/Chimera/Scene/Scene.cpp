@@ -31,7 +31,7 @@ namespace Chimera
 			}
 		);*/
 		// LuaManager::Get().InitScripts();
-		
+
 
 		/*b2BodyDef boxBodyDef;
 		boxBodyDef.position.Set(0.0f, 1.0f);
@@ -69,18 +69,46 @@ namespace Chimera
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
+
+		entity.AddComponent<TransformComponent>();
+		/*Entity e = LuaManager::Get().GetEntityByName("Trei");
+		if (e != nullptr)
+		{
+			TransformComponent tc = e.GetComponent<TransformComponent>();
+			if (tc.GetParent())
+				CM_CORE_WARN((uint32_t)tc.GetParent());
+		}*/
+		auto& tag = entity.AddComponent<TagComponent>();
+		tag.Name = name.empty() ? "New Entity" : name;
+
+		m_RootEntityList.push_back(entity);
+
+		return entity;
+	}
+	Entity Scene::CreateEntityWithID(uint32_t id, const std::string& name)
+	{
+		Entity entity = { m_Registry.create((entt::entity)id), this };
+
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Name = name.empty() ? "New Entity" : name;
-		
+
 		m_RootEntityList.push_back(entity);
 
 		return entity;
 	}
 	void Scene::DestroyEntity(Entity entity)
 	{
-		auto parent = entity.GetComponent<TransformComponent>().GetParent();
-		if(parent == nullptr)
+		//CM_CORE_ERROR((uint32_t)entity);
+		std::vector<Entity> children = entity.GetComponent<TransformComponent>().GetChildren();
+
+		for (Entity& child : children)
+		{
+			DestroyEntity(child);
+		}
+
+		Entity parent = entity.GetComponent<TransformComponent>().GetParent();
+		if (parent == nullptr)
 			RemoveRootEntity(entity);
 		else
 		{
@@ -103,7 +131,7 @@ namespace Chimera
 			auto [transform, bc] = physicsGroup.get<TransformComponent, Body2DComponent>(entity);
 
 			bc.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
-			
+
 			//Entity* userData = reinterpret_cast<Entity*>(rb.RigidBody.GetBody()->GetUserData().pointer);
 			//CM_CORE_WARN("{0}", (uint32_t) *userData);
 		}
@@ -240,14 +268,20 @@ namespace Chimera
 		return {};
 	}
 
+	void Scene::MoveRootEntity(Entity entity, uint32_t position)
+	{
+		RemoveRootEntity(entity);
+		InsertRootEntity(entity, position);
+	}
+
 	void Scene::PushRootEntity(Entity entity)
 	{
 		m_RootEntityList.push_back(entity);
 	}
 
-	void Scene::InsertRootEntity(Entity entity, std::vector<Entity>::iterator position)
+	void Scene::InsertRootEntity(Entity entity, uint32_t position)
 	{
-		m_RootEntityList.insert(position, entity);
+		m_RootEntityList.insert(m_RootEntityList.begin() + position, entity);
 	}
 
 	void Scene::RemoveRootEntity(Entity entity)
@@ -375,7 +409,7 @@ namespace Chimera
 			body.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
 			++body.ColliderCount;
 		}
-		
+
 	}
 
 	template<>
@@ -485,7 +519,7 @@ namespace Chimera
 	{
 		Body2DComponent& body = entity.GetComponent<Body2DComponent>();
 		body.ColliderCount--;
-		
+
 		component.DestroyCollider();
 
 		//bool e = entity.HasComponent<RigidBody2DComponent>();
@@ -516,7 +550,7 @@ namespace Chimera
 		{
 			entity.RemoveComponent<Body2DComponent>();
 		}
-			
+
 	}
 
 	template<>

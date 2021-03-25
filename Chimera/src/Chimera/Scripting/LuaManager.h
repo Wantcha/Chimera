@@ -54,8 +54,10 @@ namespace Chimera
 			Entity entity = { entt::to_entity(m_CurrentScene->m_Registry, lsc), m_CurrentScene };
 			return entity;
 		}
-
+		Entity GetEntityByName(const std::string& name);
 	private:
+		
+
 		sol::state m_State;
 		Scene* m_CurrentScene = nullptr;
 		static LuaManager* s_Instance;

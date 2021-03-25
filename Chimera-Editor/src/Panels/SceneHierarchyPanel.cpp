@@ -25,13 +25,12 @@ namespace Chimera
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
-		
 
-		for (Entity entity : m_Context->m_RootEntityList)
+
+		for(int i = 0; i < m_Context->m_RootEntityList.size(); ++i)
 		{
-			DrawEntityNode(entity);
+			DrawEntityNode(m_Context->m_RootEntityList[i]);
 		}
-
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
 			m_SelectionContext = {};
@@ -47,7 +46,7 @@ namespace Chimera
 				IM_ASSERT(payload->DataSize == sizeof(Entity));
 				Entity payload_n = *(const Entity*)payload->Data;
 
-				payload_n.GetComponent<TransformComponent>().SetParent({entt::null, nullptr});
+				payload_n.GetComponent<TransformComponent>().SetParent(nullptr);
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -114,8 +113,8 @@ namespace Chimera
 
 				if (payload_n != entity)
 				{
-					auto entityParent = entity.GetComponent<TransformComponent>().GetParent();
-					auto parent = payload_n.GetComponent<TransformComponent>().GetParent();
+					Entity entityParent = entity.GetComponent<TransformComponent>().GetParent();
+					Entity parent = payload_n.GetComponent<TransformComponent>().GetParent();
 
 					if (entityParent != parent)
 						payload_n.GetComponent<TransformComponent>().SetParent(entityParent);
@@ -207,7 +206,7 @@ namespace Chimera
 			if (m_SelectionContext == entity)
 				m_SelectionContext = {};
 		}
-			
+
 	}
 
 	static void DrawVec3Control(const std::string& label, glm::vec3& values, float defaultValue = 0.0f, float columnWidth = 100.0f)
@@ -298,7 +297,7 @@ namespace Chimera
 			{
 				ImGui::OpenPopup("ComponentSettings");
 			}
-			
+
 
 			bool removeComponent = false;
 			if (ImGui::BeginPopup("ComponentSettings"))
@@ -338,7 +337,7 @@ namespace Chimera
 			{
 				name = std::string(buffer);
 			}
-		} 
+		}
 
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);
@@ -378,7 +377,7 @@ namespace Chimera
 			{
 				if (m_SelectionContext.HasComponent<LuaScripts>())
 				{
-					 m_SelectionContext.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>());
+					m_SelectionContext.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>());
 				}
 
 				else
@@ -432,7 +431,7 @@ namespace Chimera
 		}
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
-		{
+			{
 				auto& camera = component.Camera;
 
 				ImGui::Checkbox("Primary", &component.Primary);
@@ -489,10 +488,10 @@ namespace Chimera
 
 					ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 				}
-		});
+			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [&](auto& component)
-		{
+			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 				ImGui::Text("Texture");
 				ImGui::SameLine();
@@ -570,7 +569,7 @@ namespace Chimera
 
 					ImGui::EndPopup();
 				}
-		});
+			});
 
 		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [&](auto& component)
 			{
@@ -706,7 +705,7 @@ namespace Chimera
 					if (ImGui::Checkbox("Has Fixed Rotation", &fixed))
 						body.SetFixedRotation(fixed);
 				}
-				
+
 			});
 
 		if (entity.HasComponent<LuaScripts>())
@@ -725,7 +724,7 @@ namespace Chimera
 				ImGui::Separator();
 
 				std::hash<int> hasher;
-				bool open = ImGui::TreeNodeEx((void*)(typeid(LuaScriptComponent).hash_code() + hasher( std::distance(scripts.begin(), it)) ),
+				bool open = ImGui::TreeNodeEx((void*)(typeid(LuaScriptComponent).hash_code() + hasher(std::distance(scripts.begin(), it))),
 					treeNodeFlags, "Lua Script");
 				ImGui::PopStyleVar();
 
@@ -832,11 +831,11 @@ namespace Chimera
 						entity.RemoveComponent<LuaScripts>();
 						break;
 					}
-						
+
 				}
 				else
 					++it;
-					
+
 			}
 		}
 		/*DrawComponent<LuaScriptComponent>("Custom Script", entity, [&](auto& component)
@@ -848,7 +847,7 @@ namespace Chimera
 					ImGuiWindowFlags_AlwaysAutoResize;
 
 				std::string outPath = component.GetName();
-				
+
 				if(outPath == "")
 					ImGui::Text("[NO SCRIPT]");
 				else
@@ -918,9 +917,9 @@ namespace Chimera
 				}
 			});*/
 
-		/*DrawComponent<Body2DComponent>("Body 2D Component", entity, [](auto& component)
-			{
-				
-			});*/
+			/*DrawComponent<Body2DComponent>("Body 2D Component", entity, [](auto& component)
+				{
+
+				});*/
 	}
 }

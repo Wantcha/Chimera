@@ -6,6 +6,12 @@ function Init()
 	Log.Warn("Starting")
 	trans = entity:GetTransformComponent()
 	trans.position.x = 0.23
+	unu = GetEntityByName("Unu")
+	unuTrans = unu:GetTransformComponent()
+	trans:SetParent(unu)
+
+	parent = trans:GetParent()
+	print(parent.name)
 	--camera = entity:GetCameraComponent()
 	--print (camera:GetOrthoSize())
 	--print(entity.name);

@@ -30,6 +30,8 @@ namespace Chimera
 		auto entity_type = m_State.new_usertype<Entity>("Entity", sol::no_constructor);
 		entity_type["name"] = sol::property( &Entity::GetName, &Entity::SetName );
 
+		m_State.set_function("GetEntityByName", &LuaManager::GetEntityByName, this);
+
 		BindMath();
 		BindApp();
 		BindInput();
@@ -62,7 +64,7 @@ namespace Chimera
 	{
 		auto& registry = m_CurrentScene->m_Registry;
 
-		auto view = registry.view<LuaScripts>();
+		//auto view = registry.view<LuaScripts>();
 
 		registry.view<LuaScripts>().each([=](auto entity, auto& ls)
 			{
@@ -100,6 +102,21 @@ namespace Chimera
 			sol::meta_function::subtraction, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x - r.x, l.y - r.y, l.z - r.z); }
 		);
 	}
+	Entity LuaManager::GetEntityByName(const std::string& name)
+	{
+		auto& registry = m_CurrentScene->m_Registry;
+
+		//auto view = registry.view<TagComponent>();
+		entt::entity a = entt::null;
+		registry.view<TagComponent>().each([&](auto entity, auto& tag)
+			{
+				if (tag.Name.compare(name) == 0)
+				{
+					a = entity;
+				}
+			});
+		return Entity{ a, m_CurrentScene };
+	}
 	void LuaManager::BindECS()
 	{
 		auto entity_type = m_State["Entity"].get_or_create<sol::usertype<Entity>>();
@@ -110,7 +127,11 @@ namespace Chimera
 		auto transformComponent_type = m_State.new_usertype<TransformComponent>("TransformComponent", sol::no_constructor,
 			"position", sol::property( &TransformComponent::GetPosition, &TransformComponent::SetPosition),
 			"rotation", sol::property(&TransformComponent::GetRotation, &TransformComponent::SetRotation),
-			"scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale));
+			"scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale),
+			"SetParent", &TransformComponent::SetParent,
+			//"GetEntity", &TransformComponent::GetEntity,
+			"GetParent", &TransformComponent::GetParent,
+			"GetChildren", &TransformComponent::GetChildren);
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, TransformComponent);
 

@@ -41,7 +41,7 @@ namespace Chimera
 		auto secondEntity = m_ActiveScene->CreateEntity("Doi");
 		secondEntity.AddComponent<SpriteRendererComponent>();
 		secondEntity.GetComponent<TransformComponent>().SetPosition(glm::vec3(1.0f, 1.5f, 0.0f));
-		//secondEntity.GetComponent<TransformComponent>().SetParent(scriptEntity);
+		//secondEntity.GetComponent<TransformComponent>().SetParent(scriptEntity.GetComponent<TransformComponent>());
 
 		auto thirdEntity = m_ActiveScene->CreateEntity("Trei");
 		thirdEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);;
@@ -330,11 +330,10 @@ namespace Chimera
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4& transform = tc.GetGlobalTransform();
-			glm::mat4& localTransform = tc.GetTransform();
+			// glm::mat4& localTransform = tc.GetTransform();
 			glm::mat4& parentTransform = glm::mat4(1.0f);
-			if(tc.GetParent())
+			if(tc.GetParent() != nullptr)
 				parentTransform = tc.GetParent().GetComponent<TransformComponent>().GetGlobalTransform();
-			//transform =  transform;
 
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);

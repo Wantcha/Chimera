@@ -19,6 +19,7 @@ namespace Chimera
 		~Scene();
 
 		Entity CreateEntity(const std::string& name = std::string());
+		Entity CreateEntityWithID(uint32_t id, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
 		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
@@ -28,9 +29,9 @@ namespace Chimera
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity GetPrimaryCameraEntity();
-
+		void MoveRootEntity(Entity entity, uint32_t position);
 		void PushRootEntity(Entity entity);
-		void InsertRootEntity(Entity entity, std::vector<Entity>::iterator position);
+		void InsertRootEntity(Entity entity, uint32_t position);
 		void RemoveRootEntity(Entity entity);
 
 	private:

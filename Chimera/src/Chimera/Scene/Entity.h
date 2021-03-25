@@ -10,6 +10,7 @@ namespace Chimera
 	public:
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
+		Entity(std::nullptr_t) :m_EntityHandle(entt::null), m_Scene(nullptr) {};
 		Entity(const Entity& other) = default;
 
 		template<typename T, typename... Args>
@@ -45,7 +46,7 @@ namespace Chimera
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		bool IsNull()
+		/*bool IsNull()
 		{
 			return m_EntityHandle == entt::null;
 		}
@@ -54,7 +55,7 @@ namespace Chimera
 		{
 			m_EntityHandle = entt::null;
 			m_Scene = nullptr;
-		}
+		}*/
 
 		std::string GetName();
 		void SetName(std::string name);

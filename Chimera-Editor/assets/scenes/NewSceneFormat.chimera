@@ -1,24 +1,92 @@
 Scene: Untitled
+Hierarchy Roots:
+  - 5
+  - 1
+  - 0
 Entities:
-  - Entity: 0
+  - Entity: 5
     TagComponent:
-      Name: Sprite
+      Name: Camera
       Enabled: true
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        FOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 10000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 4
+    TagComponent:
+      Name: Empty Entity
+      Enabled: true
+    TransformComponent:
+      Position: [-2, -3, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1
+      Children:
+        - 3
+        - 2
+  - Entity: 3
+    TagComponent:
+      Name: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [1, 1.5, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 4
+      Children:
+        []
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-    BoxCollider2DComponent:
-      ColliderCenter: [0, 0, 0]
-      ColliderSize: [1, 1]
-      Sensor: false
-      Density: 1
-      Friction: 0.300000012
-      Bounciness: 0.100000001
-    LuaScripts:
-      - LuaScriptComponent:
-          FilePath: H:\Programming\Chimera\Chimera-Editor\assets\scripts\EntityMovement.lua
-      - LuaScriptComponent:
-          FilePath: H:\Programming\Chimera\Chimera-Editor\assets\scripts\SampleScript.lua
+  - Entity: 2
+    TagComponent:
+      Name: Trei
+      Enabled: true
+    TransformComponent:
+      Position: [-1.5, 1, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 4
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [0, 1, 1, 1]
+  - Entity: 1
+    TagComponent:
+      Name: Doi
+      Enabled: true
+    TransformComponent:
+      Position: [1, 1.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        - 4
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+  - Entity: 0
+    TagComponent:
+      Name: Unu
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 0, 1, 1]
