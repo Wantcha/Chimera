@@ -16,4 +16,29 @@ namespace Chimera
 	{
 		GetComponent<TagComponent>().Name = name;
 	}
+	bool Entity::IsEnabled()
+	{
+		return GetComponent<TagComponent>().Enabled;
+	}
+	void Entity::SetEnabled(bool enabled)
+	{
+		GetComponent<TagComponent>().Enabled = enabled;
+
+		if (enabled)
+		{
+			if (this->HasComponent<Body2DComponent>())
+			{
+				auto& body = this->GetComponent<Body2DComponent>();
+				body.Body->SetEnabled(true);
+			}
+		}
+		else
+		{
+			if (this->HasComponent<Body2DComponent>())
+			{
+				auto& body = this->GetComponent<Body2DComponent>();
+				body.Body->SetEnabled(false);
+			}
+		}
+	}
 }

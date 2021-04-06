@@ -34,9 +34,6 @@
     <Filter Include="..\Sandbox">
       <UniqueIdentifier>{3F7B6B1D-2B33-AD6A-943A-86C68011485B}</UniqueIdentifier>
     </Filter>
-    <Filter Include="..\temp">
-      <UniqueIdentifier>{C6AC9747-328C-16E3-3BA4-A1B9A7027D44}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Chimera-Editor\premake5.lua">
@@ -71,9 +68,6 @@
     </None>
     <None Include="..\..\premake5.lua">
       <Filter>..</Filter>
-    </None>
-    <None Include="..\..\temp\premake5.lua">
-      <Filter>..\temp</Filter>
     </None>
     <None Include="premake5.lua" />
   </ItemGroup>

@@ -4,7 +4,7 @@ project "Chimera-Editor"
 	cppdialect "C++17"
 	staticruntime "on"
 
-	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+	targetdir ("%{wks.location}/release/")--("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
@@ -23,13 +23,15 @@ project "Chimera-Editor"
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.box2d}",
 		"%{IncludeDir.Lua}",
-		"%{IncludeDir.sol2}"
+		"%{IncludeDir.sol2}",
+		"%{IncludeDir.yaml_cpp}",
 	}
 
 	links
 	{
 		"Chimera"
 	}
+	--defines {"EDITOR"}
 
 	filter "system:windows"
 		systemversion "latest"

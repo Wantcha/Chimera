@@ -1,4 +1,6 @@
 #include "AssetManagerPanel.h"
+#include "Chimera/Scene/Entity.h"
+#include "Chimera/Scene/SceneManager.h"
 #include <imgui/imgui.h>
 
 
@@ -6,8 +8,10 @@ namespace Chimera
 {
 	void AssetManagerPanel::Init()
 	{
-		m_CurrentPath = fs::current_path();
+		m_CurrentPath = ProjectManager::Get().GetProjectPath();
 		m_CurrentPath /= "assets";
+		m_RootPath = m_CurrentPath;
+		m_CurrentDirectory = m_CurrentPath;
 		m_CurrentPathIsDir = true;
 
 		m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
@@ -54,20 +58,50 @@ namespace Chimera
 		}
 
 		ImGui::PushItemWidth(-1);
-		if (ImGui::ListBox("##", &m_Selection, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(),
-			size.y / (ImGui::GetStyle().ItemSpacing.y + ImGui::GetFontSize()) - 1))
+
+		if (ImGui::BeginListBox("##", ImVec2(0, -1)))
 		{
-			//Update current path to the selected list item.
-			m_CurrentPath = m_FilesInScope[m_Selection].Path;
-			m_CurrentPathIsDir = fs::is_directory(m_CurrentPath);
+			for (ImGuiFilepath::File& file : m_FilesInScope)
+			{
+				std::filesystem::path path = file.Path;
 
-			//If the selection is a directory, repopulate the list with the contents of that directory.
-			if (m_CurrentPathIsDir) {
-				m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+				m_CurrentPathIsDir = fs::is_directory(path);
+				if (ImGui::Selectable(file.Alias.c_str()))
+				{
+					m_CurrentPath = path;
+					if (m_CurrentPathIsDir) {
+						m_CurrentDirectory = m_CurrentPath;
+						m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+						break;
+					}
+					
+				}
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+				{
+					// Set payload to carry the index of our item (could be anything)
+					ImGui::SetDragDropPayload("Dragged_File", &file.Path, sizeof(std::filesystem::path));
+					ImGui::Text(file.Path.string().c_str());
+					ImGui::EndDragDropSource();
+				}
+				
 			}
-
+			ImGui::EndListBox();
 		}
 		ImGui::PopItemWidth();
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Entity"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(Entity));
+				Entity payload_n = *(const Entity*)payload->Data;
+
+				SceneManager::Get().SerializeEntity(m_CurrentDirectory.string(), payload_n);
+				m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+
+			}
+			ImGui::EndDragDropTarget();
+		}
 
 		ImGui::End();
 	}

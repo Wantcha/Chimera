@@ -55,21 +55,21 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\Debug-windows-x86_64\Chimera-Editor\</OutDir>
+    <OutDir>..\release\</OutDir>
     <IntDir>..\bin-int\Debug-windows-x86_64\Chimera-Editor\</IntDir>
     <TargetName>Chimera-Editor</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Release-windows-x86_64\Chimera-Editor\</OutDir>
+    <OutDir>..\release\</OutDir>
     <IntDir>..\bin-int\Release-windows-x86_64\Chimera-Editor\</IntDir>
     <TargetName>Chimera-Editor</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Dist-windows-x86_64\Chimera-Editor\</OutDir>
+    <OutDir>..\release\</OutDir>
     <IntDir>..\bin-int\Dist-windows-x86_64\Chimera-Editor\</IntDir>
     <TargetName>Chimera-Editor</TargetName>
     <TargetExt>.exe</TargetExt>
@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\ImGuizmo;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\ImGuizmo;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;..\Chimera\vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CM_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\ImGuizmo;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\ImGuizmo;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;..\Chimera\vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -118,7 +118,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CM_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\ImGuizmo;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\ImGuizmo;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;..\Chimera\vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -138,12 +138,18 @@
     <ClInclude Include="src\EditorLayer.h" />
     <ClInclude Include="src\Panels\AssetManagerPanel.h" />
     <ClInclude Include="src\Panels\SceneHierarchyPanel.h" />
+    <ClInclude Include="src\Panels\SceneManagerPanel.h" />
+    <ClInclude Include="src\Project\ProjectManager.h" />
+    <ClInclude Include="src\Project\ProjectSerializer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ChimeraEditorApp.cpp" />
     <ClCompile Include="src\EditorLayer.cpp" />
     <ClCompile Include="src\Panels\AssetManagerPanel.cpp" />
     <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="src\Panels\SceneManagerPanel.cpp" />
+    <ClCompile Include="src\Project\ProjectManager.cpp" />
+    <ClCompile Include="src\Project\ProjectSerializer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Chimera\Chimera.vcxproj">

@@ -26,6 +26,9 @@ namespace Chimera
 		void InitBindings();
 		void InitScripts();
 		void UpdateScripts(Timestep ts);
+		void FixedUpdateScripts(float fixedts);
+
+		void RefreshScripts();
 
 		void BindECS();
 		void BindInput();
@@ -55,6 +58,7 @@ namespace Chimera
 			return entity;
 		}
 		Entity GetEntityByName(const std::string& name);
+		Entity CreateEmptyEntity(const std::string& name);
 	private:
 		
 

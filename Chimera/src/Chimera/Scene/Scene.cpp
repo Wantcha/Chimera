@@ -9,6 +9,8 @@
 #include <glm/glm.hpp>
 #include "Chimera/Scripting/LuaManager.h"
 
+#include "Chimera/Events/ApplicationEvent.h"
+
 
 namespace Chimera
 {
@@ -21,6 +23,7 @@ namespace Chimera
 		g_debugDraw.Create();
 		m_World->SetDebugDraw(&g_debugDraw);
 		m_World->SetContactListener(&m_ContactListener);
+		m_World->SetAllowSleeping(true);
 
 		LuaManager::Get().Init(this);
 		/*m_Registry.each([&](auto entityID)
@@ -99,7 +102,10 @@ namespace Chimera
 	}
 	void Scene::DestroyEntity(Entity entity)
 	{
-		//CM_CORE_ERROR((uint32_t)entity);
+		if (entity.HasComponent<Body2DComponent>())
+		{
+			entity.RemoveComponent<Body2DComponent>();
+		}
 		std::vector<Entity> children = entity.GetComponent<TransformComponent>().GetChildren();
 
 		for (Entity& child : children)
@@ -107,6 +113,7 @@ namespace Chimera
 			DestroyEntity(child);
 		}
 
+		//Entity aux = entity;
 		Entity parent = entity.GetComponent<TransformComponent>().GetParent();
 		if (parent == nullptr)
 			RemoveRootEntity(entity);
@@ -118,11 +125,35 @@ namespace Chimera
 			if (position != entitySiblings.end())
 				entitySiblings.erase(position);
 		}
+		//aux.SetNullScene();
 		m_Registry.destroy(entity);
 	}
-	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
+	void Scene::OnRenderEditor(EditorCamera& camera)
 	{
-		LuaManager::Get().UpdateScripts(ts);
+		Renderer2D::BeginScene(camera);
+
+		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, TagComponent>);
+		for (auto entity : group)
+		{
+			auto [transform, sprite, tag] = group.get<TransformComponent, SpriteRendererComponent, TagComponent>(entity);
+
+			if (tag.Enabled)
+				Renderer2D::DrawSprite(transform.GetGlobalTransform(), sprite, (int)entity);
+		}
+
+		if (m_EditColliders)
+		{
+			g_debugDraw.SetFlags(b2Draw::e_shapeBit);
+			g_debugDraw.SetCamera(camera);
+			m_World->DebugDraw();
+			g_debugDraw.Flush();
+		}
+
+		Renderer2D::EndScene();
+	}
+	void Scene::OnUpdateEditor(Timestep ts)
+	{
+		//LuaManager::Get().UpdateScripts(ts);
 
 		auto physicsGroup = m_Registry.group<>(entt::get<TransformComponent, Body2DComponent>);
 		for (auto entity : physicsGroup)
@@ -136,47 +167,18 @@ namespace Chimera
 			//CM_CORE_WARN("{0}", (uint32_t) *userData);
 		}
 
-
-		Renderer2D::BeginScene(camera);
-
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, TagComponent>);
-		for (auto entity : group)
-		{
-			auto [transform, sprite, tag] = group.get<TransformComponent, SpriteRendererComponent, TagComponent>(entity);
-
-			if (tag.Enabled)
-				Renderer2D::DrawSprite(transform.GetGlobalTransform(), sprite, (int)entity);
-		}
-
-		/*auto body = m_World->GetBodyList();
-		while (body)
-		{
-			glm::vec2 pos = { body->GetTransform().p.x, body->GetTransform().p.y };
-
-			Renderer2D::DrawRotatedQuad(0, pos, { 1.0f, 1.0f }, body->GetTransform().q.GetAngle(), { 0.5, 0.5, 1.0f, 1.0f });
-
-			body = body->GetNext();
-		}*/
-
-		Renderer2D::EndScene();
-
 		while (!m_DestructionStack.empty())
 		{
+			Entity* e = reinterpret_cast<Entity*>(m_DestructionStack.top()->GetUserData().pointer);
+			delete e;
 			CM_CORE_ERROR("Destroying body...");
 			m_World->DestroyBody(m_DestructionStack.top());
 			m_DestructionStack.pop();
 		}
-
-		if (m_EditColliders)
-		{
-			g_debugDraw.SetFlags(b2Draw::e_shapeBit);
-			g_debugDraw.SetCamera(camera);
-			m_World->DebugDraw();
-			g_debugDraw.Flush();
-		}
 	}
-	void Scene::OnFixedUpdateEditor(float fixedts)
+	void Scene::OnFixedUpdate(float fixedts)
 	{
+		LuaManager::Get().FixedUpdateScripts(fixedts);
 		m_World->Step(fixedts, 6, 2);
 
 		b2Body* body = m_World->GetBodyList();
@@ -189,26 +191,8 @@ namespace Chimera
 			body = body->GetNext();
 		}
 	}
-	/*void Scene::OnUpdateRuntime(Timestep ts)
+	void Scene::OnRenderRuntime()
 	{
-		//Update scripts
-		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-				{
-					// TODO: Move to Scene::OnScenePlay
-					if (!nsc.Instance)
-					{
-						nsc.Instance = nsc.InstantiateScript();
-						nsc.Instance->m_Entity = Entity{ entity, this };
-						nsc.Instance->OnCreate();
-					}
-					nsc.Instance->OnUpdate(ts);
-				});
-		}
-
-
-		//Render 2D sprites
-
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
 
@@ -229,16 +213,40 @@ namespace Chimera
 		{
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, TagComponent>);
 			for (auto entity : group)
 			{
-				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-				Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
+				auto [transform, sprite, tag] = group.get<TransformComponent, SpriteRendererComponent, TagComponent>(entity);
+
+				if (tag.Enabled)
+					Renderer2D::DrawSprite(transform.GetGlobalTransform(), sprite, (int)entity);
 			}
 
 			Renderer2D::EndScene();
 		}
-	}*/
+	}
+	void Scene::OnUpdateRuntime(Timestep ts)
+	{
+		LuaManager::Get().UpdateScripts(ts);
+
+		auto physicsGroup = m_Registry.group<>(entt::get<TransformComponent, Body2DComponent>);
+		for (auto entity : physicsGroup)
+		{
+			// TODO Check maybe if entity is enabled first
+			auto [transform, bc] = physicsGroup.get<TransformComponent, Body2DComponent>(entity);
+
+			bc.Body->SetTransform({ transform.GetPosition().x, transform.GetPosition().y }, transform.GetRotation().z);
+
+		}
+
+		while (!m_DestructionStack.empty())
+		{
+			CM_CORE_ERROR("Destroying body...");
+			m_World->DestroyBody(m_DestructionStack.top());
+			m_DestructionStack.pop();
+		}
+	}
+
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
@@ -255,6 +263,12 @@ namespace Chimera
 			}
 		}
 	}
+
+	/*void Scene::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		//dispatcher.Dispatch<WindowResizeEvent>(CM_BIND_EVENT_FN(Scene::OnViewportResize));
+	}*/
 
 	Entity Scene::GetPrimaryCameraEntity()
 	{
@@ -556,8 +570,8 @@ namespace Chimera
 	template<>
 	void Scene::OnComponentRemoved<Body2DComponent>(Entity entity, Body2DComponent& component)
 	{
-		Entity* e = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
-		delete e;
+		//Entity* e = reinterpret_cast<Entity*>(entity.GetComponent<Body2DComponent>().Body->GetUserData().pointer);
+		//delete e;
 		m_DestructionStack.push(component.Body);
 		//m_World->DestroyBody(component.Body);
 		CM_CORE_ERROR("Removing Body2DComponent...");

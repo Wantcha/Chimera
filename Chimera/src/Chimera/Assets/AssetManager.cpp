@@ -4,6 +4,7 @@
 namespace Chimera
 {
 	std::unordered_map<AssetType, Scope<IAssetCache>> AssetManager::s_Caches;
+	std::string AssetManager::m_GameDirectory;
 
 	void AssetManager::RegisterCache(Scope<IAssetCache> cache)
 	{
@@ -27,7 +28,9 @@ namespace Chimera
 	template<>
 	Ref<Texture2D> AssetManager::LoadAsset(const std::string& path)
 	{
-		Ref<Texture2D> tex = Texture2D::Create(path.c_str());
+		//CM_CORE_ERROR(path);
+		Ref<Texture2D> tex = Texture2D::Create(( m_GameDirectory + "\\assets" + path ).c_str());
+		tex->SetFilepath(path);
 		return tex;
 	}
 

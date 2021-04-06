@@ -12,6 +12,7 @@ namespace Chimera
 		Entity(entt::entity handle, Scene* scene);
 		Entity(std::nullptr_t) :m_EntityHandle(entt::null), m_Scene(nullptr) {};
 		Entity(const Entity& other) = default;
+		~Entity() { m_EntityHandle = entt::null; m_Scene = nullptr; }
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
@@ -46,16 +47,15 @@ namespace Chimera
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		/*bool IsNull()
+		bool IsValid()
 		{
-			return m_EntityHandle == entt::null;
+			return m_Scene->m_Registry.valid(m_EntityHandle);
 		}
 
-		void SetNull()
+		void SetNullScene()
 		{
-			m_EntityHandle = entt::null;
 			m_Scene = nullptr;
-		}*/
+		}
 
 		std::string GetName();
 		void SetName(std::string name);
@@ -79,9 +79,10 @@ namespace Chimera
 		operator entt::entity() const { return m_EntityHandle; }
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
+
 		Entity& operator=(std::nullptr_t) noexcept { m_EntityHandle = entt::null; m_Scene = nullptr ; return *this; }
-		bool operator==(std::nullptr_t) const { return m_EntityHandle == entt::null; }
-		bool operator!=(std::nullptr_t) const { return !(m_EntityHandle == entt::null); }
+		bool operator==(std::nullptr_t) const { return m_EntityHandle == entt::null || m_Scene == nullptr; }
+		bool operator!=(std::nullptr_t) const { return !(m_EntityHandle == entt::null)/* && m_Scene == nullptr)*/; }
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;

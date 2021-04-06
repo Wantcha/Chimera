@@ -18,12 +18,14 @@ namespace Chimera
 		void Initialize();
 		void OnInit();
 		void OnUpdate(Timestep ts);
+		void OnFixedUpdate(float fixedts);
 		void OnCollisionEnter2D(Contact2D contact);
 		void OnCollisionExit2D(Contact2D contact);
 		void OnSensorEnter2D(Collider2D* other);
 		void OnSensorExit2D(Collider2D* other);
 
-		void Load(const std::string& fileName);
+		void Load(const std::string& filePath);
+		void Unload();
 		void LoadScript(const std::string& fileName);
 
 		const Ref<sol::environment> GetSolEnvironment() const
@@ -65,6 +67,7 @@ namespace Chimera
 		Ref<sol::environment> m_Env;
 		Ref<sol::protected_function> m_OnInitFunc;
 		Ref<sol::protected_function> m_OnUpdateFunc;
+		Ref<sol::protected_function> m_OnFixedUpdateFunc;
 		Ref<sol::protected_function> m_OnCollisionEnter2DFunc;
 		Ref<sol::protected_function> m_OnCollisionExit2DFunc;
 		Ref<sol::protected_function> m_OnSensorEnter2DFunc;

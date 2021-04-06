@@ -4,7 +4,7 @@ project "Sandbox"
 	cppdialect "C++17"
 	staticruntime "on"
 
-	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+	targetdir ("%{wks.location}/release/")--("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
@@ -19,7 +19,10 @@ project "Sandbox"
 		"%{wks.location}/Chimera/src",
 		"%{wks.location}/Chimera/vendor",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.box2d}",
+		"%{IncludeDir.Lua}",
+		"%{IncludeDir.sol2}"
 	}
 
 	links

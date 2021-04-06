@@ -48,16 +48,15 @@ namespace Chimera
 		void SetRotation(glm::vec3 rot) { m_Rotation = rot; RecalcLocalTransform(); }
 		void SetScale(glm::vec3 scale) { m_Scale = scale; RecalcLocalTransform(); }
 
-		glm::vec3 GetPosition() const { return m_Position; }
-		glm::vec3 GetRotation() const { return m_Rotation; }
-		glm::vec3 GetScale() const { return m_Scale; }
+		glm::vec3& GetPosition() { return m_Position; }
+		glm::vec3& GetRotation() { return m_Rotation; }
+		glm::vec3& GetScale() { return m_Scale; }
 
 		glm::mat4 GetTransform() const
 		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(m_Rotation));
 
 			return glm::translate(glm::mat4(1.0f), m_Position) * rotation * glm::scale(glm::mat4(1.0f), m_Scale);
-			//return m_Transform;
 		}
 		glm::mat4 GetGlobalTransform()
 		{
@@ -66,10 +65,6 @@ namespace Chimera
 
 		void SetParent(Entity newParent)
 		{
-			/*std::vector<Entity>::iterator position = std::find(m_Children.begin(), m_Children.end(), newParent);
-			if (position != m_Children.end())
-				return;*/
-
 			if (m_Parent != nullptr)
 			{
 				std::vector<Entity>& children = m_Parent.GetComponent<TransformComponent>().m_Children;
@@ -91,6 +86,8 @@ namespace Chimera
 				if(m_Parent != nullptr)
 					oldGlobal = m_Parent.GetComponent<TransformComponent>().GetGlobalTransform();
 				m_Parent = newParent;
+
+				// Maintain consistent transform between reparenting operations
 				glm::mat4 newTransform = glm::inverse(newParent.GetComponent<TransformComponent>().GetGlobalTransform()) * oldGlobal * GetTransform();
 
 				Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);

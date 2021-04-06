@@ -35,6 +35,8 @@ namespace Chimera {
 
 		void Close();
 
+		//void InitializeGame();
+
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 	private:
 		bool OnWindowClosed(WindowCloseEvent& e);

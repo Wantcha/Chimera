@@ -1,6 +1,7 @@
 #include "cmpch.h"
 #include "LuaScriptComponent.h"
 #include "LuaManager.h"
+#include "Chimera/Assets/AssetManager.h"
 
 namespace Chimera
 {
@@ -32,7 +33,7 @@ namespace Chimera
 		auto count = lastDot == std::string::npos ? m_FilePath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = m_FilePath.substr(lastSlash, count);
 
-		LoadScript(m_FilePath);
+		LoadScript(AssetManager::GetGameDirectory() + "\\assets" + m_FilePath);
 	}
 	void LuaScriptComponent::OnInit()
 	{
@@ -52,6 +53,19 @@ namespace Chimera
 		if (m_OnUpdateFunc)
 		{
 			sol::protected_function_result result = m_OnUpdateFunc->call(float(ts));
+			if (!result.valid())
+			{
+				sol::error err = result;
+				CM_CORE_ERROR("Failed to execute Lua Script: Update function");
+				CM_CORE_ERROR("Error : {0}", err.what());
+			}
+		}
+	}
+	void LuaScriptComponent::OnFixedUpdate(float fixedts)
+	{
+		if (m_OnFixedUpdateFunc)
+		{
+			sol::protected_function_result result = m_OnFixedUpdateFunc->call(fixedts);
 			if (!result.valid())
 			{
 				sol::error err = result;
@@ -112,7 +126,7 @@ namespace Chimera
 			}
 		}
 	}
-	void LuaScriptComponent::Load(const std::string& fileName)
+	void LuaScriptComponent::Load(const std::string& filePath)
 	{
 		if (m_Env)
 		{
@@ -120,9 +134,23 @@ namespace Chimera
 			if (releaseFunc.valid())
 				releaseFunc.call();
 		}
-		m_FilePath = fileName;
+		m_FilePath = filePath;
 		m_HasBeenInitialized = false;
 		Initialize();
+	}
+	void LuaScriptComponent::Unload()
+	{
+		m_FilePath = "";
+		m_Name = "";
+		m_Env = nullptr;
+		m_HasBeenInitialized = false;
+		m_OnInitFunc.reset();
+		m_OnUpdateFunc.reset();
+		m_OnFixedUpdateFunc.reset();
+		m_OnCollisionEnter2DFunc.reset();
+		m_OnCollisionExit2DFunc.reset();
+		m_OnSensorEnter2DFunc.reset();
+		m_OnSensorExit2DFunc.reset();
 	}
 	void LuaScriptComponent::LoadScript(const std::string& fileName)
 	{
@@ -147,6 +175,10 @@ namespace Chimera
 		m_OnUpdateFunc = CreateRef<sol::protected_function>((*m_Env)["Update"]);
 		if (!m_OnUpdateFunc->valid())
 			m_OnUpdateFunc.reset();
+
+		m_OnFixedUpdateFunc = CreateRef<sol::protected_function>((*m_Env)["FixedUpdate"]);
+		if (!m_OnFixedUpdateFunc->valid())
+			m_OnFixedUpdateFunc.reset();
 
 		m_OnCollisionEnter2DFunc = CreateRef<sol::protected_function>((*m_Env)["CollisionEnter2D"]);
 		if (!m_OnCollisionEnter2DFunc->valid())

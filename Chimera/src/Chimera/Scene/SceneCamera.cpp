@@ -36,6 +36,7 @@ namespace Chimera
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
 		{
+			// CM_CORE_ERROR("{0}, {1}", m_FOV, m_AspectRatio);
 			m_Projection = glm::perspective(m_FOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 		}
 

@@ -3,8 +3,9 @@
 
 #include "Entity.h"
 #include "Components.h"
+#include "Chimera/Assets/AssetManager.h"
+#include "Chimera/Math/Math.h"
 
-#include <yaml-cpp/yaml.h>
 #include <fstream>
 
 namespace YAML
@@ -131,9 +132,12 @@ namespace Chimera
 			out << YAML::BeginMap;
 
 			auto& tc = entity.GetComponent<TransformComponent>();
-			out << YAML::Key << "Position" << YAML::Value << tc.GetPosition();
-			out << YAML::Key << "Rotation" << YAML::Value << tc.GetRotation();
-			out << YAML::Key << "Scale" << YAML::Value << tc.GetScale();
+			glm::mat4 globalTransform = tc.GetGlobalTransform();
+			glm::vec3 pos, rot, scale;
+			Math::DecomposeTransform(tc.GetGlobalTransform(), pos, rot, scale);
+			out << YAML::Key << "Position" << YAML::Value << pos;
+			out << YAML::Key << "Rotation" << YAML::Value << rot;
+			out << YAML::Key << "Scale" << YAML::Value << scale;
 			if(tc.GetParent() == nullptr)
 				out << YAML::Key << "Parent" << YAML::Value << (uint32_t)entt::null;
 			else
@@ -185,6 +189,7 @@ namespace Chimera
 
 			auto& src = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << src.Color;
+			out << YAML::Key << "Texture" << YAML::Value << src.SpriteTexture->GetFilepath();
 			out << YAML::EndMap;
 		}
 
@@ -192,9 +197,6 @@ namespace Chimera
 		{
 			out << YAML::Key << "RigidBody2DComponent" << YAML::Value;
 			out << YAML::BeginMap;
-
-			//out << YAML::Key << "RigidBody2DComponent" << YAML::Value;
-			//out << YAML::BeginMap;
 
 			auto& rb = entity.GetComponent<RigidBody2DComponent>();
 			out << YAML::Key << "BodyType" << YAML::Value << (int)rb.GetBodyType();
@@ -211,9 +213,6 @@ namespace Chimera
 			out << YAML::Key << "BoxCollider2DComponent" << YAML::Value;
 			out << YAML::BeginMap;
 
-			//out << YAML::Key << "BoxCollider2DComponent" << YAML::Value;
-			//out << YAML::BeginMap;
-
 			auto& box = entity.GetComponent<BoxCollider2DComponent>();
 			glm::vec3 pos = { box.GetCenter().x, box.GetCenter().y, 0.0f };
 			out << YAML::Key << "ColliderCenter" << YAML::Value << pos;
@@ -223,7 +222,6 @@ namespace Chimera
 			out << YAML::Key << "Friction" << YAML::Value << box.GetFriction();
 			out << YAML::Key << "Bounciness" << YAML::Value << box.GetBounciness();
 
-			//out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 
@@ -231,9 +229,6 @@ namespace Chimera
 		{
 			out << YAML::Key << "CircleCollider2DComponent" << YAML::Value;
 			out << YAML::BeginMap;
-
-			//out << YAML::Key << "CircleCollider2DComponent" << YAML::Value;
-			//out << YAML::BeginMap;
 
 			auto& cc = entity.GetComponent<CircleCollider2DComponent>();
 			glm::vec3 pos = { cc.GetCenter().x, cc.GetCenter().y, 0.0f };
@@ -244,7 +239,6 @@ namespace Chimera
 			out << YAML::Key << "Friction" << YAML::Value << cc.GetFriction();
 			out << YAML::Key << "Bounciness" << YAML::Value << cc.GetBounciness();
 
-			//out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 
@@ -253,14 +247,13 @@ namespace Chimera
 			out << YAML::Key << "LuaScripts" << YAML::Value << YAML::BeginSeq;
 
 			std::vector<Ref<LuaScriptComponent>>& scripts = entity.GetComponent<LuaScripts>().Scripts;
-			//out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 			for (Ref<LuaScriptComponent> lsc : scripts)
 			{
 				out << YAML::BeginMap;
 
 				out << YAML::Key << "LuaScriptComponent" << YAML::Value;
 				out << YAML::BeginMap;
-				out << YAML::Key << "FilePath" << YAML::Value << lsc->GetFilePath();
+				out << YAML::Key << "Filepath" << YAML::Value << lsc->GetFilePath();
 				out << YAML::EndMap;
 
 				out << YAML::EndMap;
@@ -271,7 +264,7 @@ namespace Chimera
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::Serialize(const std::string& filepath)
+	std::string SceneSerializer::Serialize()
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -299,26 +292,86 @@ namespace Chimera
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
+		return out.c_str();
+	}
+
+	void SceneSerializer::SerializeToFile(const std::string& filepath)
+	{
 		std::ofstream fout(filepath);
+		fout << Serialize();
+	}
+	void SceneSerializer::SerializeToMemory(std::string& buffer)
+	{
+		buffer = Serialize();
+		//CM_CORE_ERROR(m_SceneBeforePlay);
+	}
+
+	static void SerializeEntityHierarchy(YAML::Emitter& out, Entity entity)
+	{
+		SerializeEntity(out, entity);
+		auto& children = entity.GetComponent<TransformComponent>().GetChildren();
+		for (Entity child : children)
+		{
+			SerializeEntityHierarchy(out, child);
+		}
+	}
+
+	void SceneSerializer::SerializeEntityWrap(const std::string& filepath, Entity entity)
+	{
+		std::ofstream fout(filepath + "\\" + entity.GetName() + ".wrap");
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		SerializeEntityHierarchy(out, entity);
+		
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
 		fout << out.c_str();
 	}
-	void SceneSerializer::SerializeRuntime(const std::string& filepath)
-	{
-		CM_CORE_ASSERT(false, "");
-	}
-	bool SceneSerializer::Deserialize(const std::string& filepath)
+
+	bool SceneSerializer::DeserializeFromFile(const std::string& filepath)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
+		Deserialize(strStream.str());
+		return true;
+	}
 
+	bool SceneSerializer::DeserializeFromMemory(const std::string& buffer)
+	{
+		//CM_CORE_ERROR(m_SceneBeforePlay.str());
+		//CM_CORE_ERROR(m_SceneBeforePlay);
+		Deserialize(buffer);
+		return true;
+	}
+
+	bool SceneSerializer::DeserializeEntityWrap(const std::string& filepath)
+	{
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
+
+		return DeserializeEntities(data);
+	}
+
+	bool SceneSerializer::Deserialize(const std::string& buffer)
+	{
+		YAML::Node data = YAML::Load(buffer);
 		if (!data["Scene"])
 			return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
 		CM_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
+		DeserializeEntities(data);
+		
+		return true;
+	}
+	bool SceneSerializer::DeserializeEntities(YAML::Node& data)
+	{
+		std::unordered_map<uint32_t, uint32_t> adjustedEntityID;
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -327,17 +380,23 @@ namespace Chimera
 				uint32_t uuid = entity["Entity"].as<uint32_t>();
 
 				std::string name;
-				bool enabled;
+				bool enabled = true;
 				auto tagComponent = entity["TagComponent"];
 				if (tagComponent)
 				{
 					name = tagComponent["Name"].as<std::string>();
 					enabled = tagComponent["Enabled"].as<bool>();
 				}
-					
-				CM_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity deserializedEntity = m_Scene->CreateEntityWithID(uuid,name);
+				Entity deserializedEntity = m_Scene->CreateEntityWithID(uuid, name);
+				CM_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", (uint32_t)deserializedEntity, name);
+
+				if ((uint32_t)deserializedEntity != uuid)
+				{
+					adjustedEntityID[uuid] = (uint32_t)deserializedEntity;
+					CM_CORE_ERROR("Adjusted from {0} to {1}", uuid, (uint32_t)deserializedEntity );
+				}
+
 				deserializedEntity.GetComponent<TagComponent>().Enabled = enabled;
 
 				auto transformComponent = entity["TransformComponent"];
@@ -375,6 +434,8 @@ namespace Chimera
 				{
 					auto& src = deserializedEntity.AddComponent< SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+					if (spriteRendererComponent["Texture"].as<std::string>() != "")
+						src.SpriteTexture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent["Texture"].as<std::string>());
 				}
 
 				auto rigiBody2DComponent = entity["RigidBody2DComponent"];
@@ -392,7 +453,7 @@ namespace Chimera
 				if (boxCollider2DComponent)
 				{
 					auto& box = deserializedEntity.AddComponent<BoxCollider2DComponent>();
-					
+
 					box.SetCenter(boxCollider2DComponent["ColliderCenter"].as<glm::vec3>());
 					box.SetSize(boxCollider2DComponent["ColliderSize"].as<glm::vec2>());
 					box.SetDensity(boxCollider2DComponent["Density"].as<float>());
@@ -417,7 +478,7 @@ namespace Chimera
 				{
 					for (auto script : scripts)
 					{
-						std::string filePath = script["LuaScriptComponent"]["FilePath"].as<std::string>();
+						std::string filePath = script["LuaScriptComponent"]["Filepath"].as<std::string>();
 						if (deserializedEntity.HasComponent<LuaScripts>())
 						{
 							deserializedEntity.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>(filePath));
@@ -434,6 +495,11 @@ namespace Chimera
 			for (auto entity : entities)
 			{
 				uint32_t uuid = entity["Entity"].as<uint32_t>();
+				if (adjustedEntityID.find(uuid) != adjustedEntityID.end())
+				{
+					uuid = adjustedEntityID[uuid];
+					//CM_CORE_ERROR()
+				}
 				Entity deserializedEntity = Entity{ (entt::entity)uuid, m_Scene.get() };
 
 				auto transformComponent = entity["TransformComponent"];
@@ -443,7 +509,14 @@ namespace Chimera
 					auto children = transformComponent["Children"];
 					for (auto child : children)
 					{
-						Entity e = Entity{ (entt::entity)child.as<uint32_t>(), m_Scene.get() };
+						uint32_t childID = child.as<uint32_t>();
+						if (adjustedEntityID.find(childID) != adjustedEntityID.end())
+						{
+							childID = adjustedEntityID[childID];
+							//CM_CORE_ERROR()
+						}
+
+						Entity e = Entity{ (entt::entity)childID, m_Scene.get() };
 						e.GetComponent<TransformComponent>().SetParent(deserializedEntity);
 					}
 				}
@@ -462,11 +535,6 @@ namespace Chimera
 			}
 			m_Scene->m_RootEntityList = newOrder;
 		}
-		return true;
-	}
-	bool SceneSerializer::DeserializeRuntime(const std::string& filepath)
-	{
-		CM_CORE_ASSERT(false, "");
 		return false;
 	}
 }

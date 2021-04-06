@@ -35,7 +35,12 @@ namespace Chimera
 		}
 
 		static void CollectGarbage();
+
+		static std::string GetGameDirectory() { return m_GameDirectory; }
+		static void SetGameDirectory(const std::string& directory) { m_GameDirectory = directory; }
 	private:
 		static std::unordered_map<AssetType, Scope<IAssetCache>> s_Caches;
+
+		static std::string m_GameDirectory;
 	};
 }

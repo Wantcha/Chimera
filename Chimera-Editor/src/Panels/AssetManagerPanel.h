@@ -3,9 +3,10 @@
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #include <filesystem>
-#include <experimental/filesystem>
+#include "../Project/ProjectManager.h"
+//#include <experimental/filesystem>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace ImGuiFilepath
 {
@@ -64,15 +65,17 @@ namespace Chimera
 
 		void Init();
 		void OnImGuiRender();
+		void RefreshFiles() { m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath); }
 
-		const std::string GetOutPath() const { return m_OutPath; }
+		const std::string GetOutPath() const { return fs::relative(m_OutPath, ProjectManager::Get().GetProjectPath()).string(); }
 
 	private:
 		//const int ClampSize_tToInt(const size_t data);
 
 		int m_Selection;
 		fs::path m_CurrentPath;
-		fs::path m_RootPath = fs::current_path()/"assets";
+		fs::path m_CurrentDirectory;
+		fs::path m_RootPath/* = fs::current_path()/"assets"*/;
 		bool m_CurrentPathIsDir;
 		std::string m_OutPath;
 

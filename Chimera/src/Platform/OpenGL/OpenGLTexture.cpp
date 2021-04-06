@@ -6,7 +6,7 @@
 namespace Chimera
 {
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-		:m_Path(path)
+		//:m_Path(path)
 	{
 		if (m_RendererID)
 			glDeleteTextures(1, &m_RendererID);

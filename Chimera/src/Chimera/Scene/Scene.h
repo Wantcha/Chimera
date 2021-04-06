@@ -22,11 +22,14 @@ namespace Chimera
 		Entity CreateEntityWithID(uint32_t id, const std::string& name = std::string());
 		void DestroyEntity(Entity entity);
 
-		void OnUpdateEditor(Timestep ts, EditorCamera& camera);
-		void OnFixedUpdateEditor(float fixedts);
+		void OnRenderEditor(EditorCamera& camera);
+		void OnUpdateEditor(Timestep ts);
+		void OnFixedUpdate(float fixedts);
+		void OnRenderRuntime();
 		void OnUpdateRuntime(Timestep ts);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
+		//void OnEvent(Event& e);
 
 		Entity GetPrimaryCameraEntity();
 		void MoveRootEntity(Entity entity, uint32_t position);
@@ -55,6 +58,7 @@ namespace Chimera
 
 		friend class Entity;
 		friend class SceneSerializer;
+		friend class SceneManager;
 		friend class SceneHierarchyPanel;
 		friend class RigidBody2DComponent;
 		friend class LuaManager;

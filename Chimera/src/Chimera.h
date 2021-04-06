@@ -5,6 +5,7 @@
 #include "Chimera/Core/Application.h"
 #include "Chimera/Core/Layer.h"
 #include "Chimera/Core/Log.h"
+#include "Chimera/Core/Core.h"
 
 #include "Chimera/Core/Timestep.h"
 

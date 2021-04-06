@@ -219,6 +219,9 @@
     <ClInclude Include="src\Chimera\Scene\SceneCamera.h">
       <Filter>src\Chimera\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chimera\Scene\SceneManager.h">
+      <Filter>src\Chimera\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chimera\Scene\SceneSerializer.h">
       <Filter>src\Chimera\Scene</Filter>
     </ClInclude>
@@ -232,6 +235,9 @@
       <Filter>src\Chimera\Scripting</Filter>
     </ClInclude>
     <ClInclude Include="src\Chimera\Utils\PlatformUtils.h">
+      <Filter>src\Chimera\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chimera\Utils\Utils.h">
       <Filter>src\Chimera\Utils</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h">
@@ -1491,6 +1497,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chimera\ImGui\FontAwesome.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chimera\Assets\AssetManager.cpp">
@@ -1583,6 +1590,9 @@
     <ClCompile Include="src\Chimera\Scene\SceneCamera.cpp">
       <Filter>src\Chimera\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\Chimera\Scene\SceneManager.cpp">
+      <Filter>src\Chimera\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\Chimera\Scene\SceneSerializer.cpp">
       <Filter>src\Chimera\Scene</Filter>
     </ClCompile>
@@ -1591,6 +1601,9 @@
     </ClCompile>
     <ClCompile Include="src\Chimera\Scripting\LuaScriptComponent.cpp">
       <Filter>src\Chimera\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chimera\Utils\Utils.cpp">
+      <Filter>src\Chimera\Utils</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
       <Filter>src\Platform\OpenGL</Filter>

@@ -5,7 +5,7 @@
 
 namespace Chimera
 {
-	//class Entity;
+	class Entity;
 
 	class Collider2D
 	{
@@ -37,7 +37,7 @@ namespace Chimera
 		b2FixtureDef& GetFixtureDef() { return m_FixtureDef; }
 		b2Fixture* GetFixture() { return m_Fixture; }
 
-		//Entity GetEntity() { return *(Entity*)m_Body->GetUserData().pointer; }
+		Entity& GetEntity() { return *reinterpret_cast<Entity*>(m_Body->GetUserData().pointer); }
 
 		Collider2D& operator=(const Collider2D& other)
 		{

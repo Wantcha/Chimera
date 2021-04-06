@@ -5,15 +5,18 @@
 
 #include "Chimera/Scene/SceneSerializer.h"
 #include "Chimera/Utils/PlatformUtils.h"
-
+#include "Chimera/Utils/Utils.h"
 #include "ImGuizmo.h"
 #include "Chimera/Math/Math.h"
-#include "Chimera/Physics/ContactListener2D.h"
+#include "Project/ProjectManager.h"
+#include "Project/ProjectSerializer.h"
+#include "Chimera/Scripting/LuaManager.h"
+//#include "Chimera/Physics/ContactListener2D.h"
 
 namespace Chimera
 {
 	EditorLayer::EditorLayer()
-		: Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
+		: Layer("EditorLayer")
 	{
 
 	}
@@ -29,21 +32,23 @@ namespace Chimera
 		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = Framebuffer::Create(fbSpec);
+		m_ViewportFramebuffer = Framebuffer::Create(fbSpec);
+		m_GameWindowFramebuffer = Framebuffer::Create(fbSpec);
 
-		m_ActiveScene = CreateRef<Scene>();
+		Ref<Scene> activeScene = SceneManager::Get().GetActiveScene();
+		//m_ActiveScene = CreateRef<Scene>();
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
-		auto scriptEntity = m_ActiveScene->CreateEntity("Unu");
+		auto scriptEntity = activeScene->CreateEntity("Unu");
 		scriptEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
 
-		auto secondEntity = m_ActiveScene->CreateEntity("Doi");
+		auto secondEntity = activeScene->CreateEntity("Doi");
 		secondEntity.AddComponent<SpriteRendererComponent>();
 		secondEntity.GetComponent<TransformComponent>().SetPosition(glm::vec3(1.0f, 1.5f, 0.0f));
 		//secondEntity.GetComponent<TransformComponent>().SetParent(scriptEntity.GetComponent<TransformComponent>());
 
-		auto thirdEntity = m_ActiveScene->CreateEntity("Trei");
+		auto thirdEntity = activeScene->CreateEntity("Trei");
 		thirdEntity.AddComponent<SpriteRendererComponent>().Color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);;
 		thirdEntity.GetComponent<TransformComponent>().SetPosition(glm::vec3(-2.5f, -0.5f, 0.0f));
 		//thirdEntity.GetComponent<TransformComponent>().SetParent(secondEntity);
@@ -103,8 +108,7 @@ namespace Chimera
 
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();*/
 
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-		m_AssetManagerPanel.Init();
+		m_SceneHierarchyPanel.SetContext(activeScene);
 	}
 
 	void EditorLayer::OnDetach()
@@ -116,51 +120,42 @@ namespace Chimera
 	{
 		CM_PROFILE_FUNCTION();
 
-		if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+		Ref<Scene> activeScene = SceneManager::Get().GetActiveScene();
+		if (FramebufferSpecification spec = m_ViewportFramebuffer->GetSpecification();
 			m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
 			(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
 		{
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			//m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+			m_ViewportFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		// Update
-		if (m_ViewportFocused)
+		if (FramebufferSpecification spec = m_GameWindowFramebuffer->GetSpecification();
+			m_GameWindowSize.x > 0.0f && m_GameWindowSize.y > 0.0f &&
+			(spec.Width != m_GameWindowSize.x || spec.Height != m_GameWindowSize.y))
 		{
-			//m_CameraController.OnUpdate(ts);
+			m_GameWindowFramebuffer->Resize((uint32_t)m_GameWindowSize.x, (uint32_t)m_GameWindowSize.y);
+			activeScene->OnViewportResize((uint32_t)m_GameWindowSize.x, (uint32_t)m_GameWindowSize.y);
 		}
+
 		m_EditorCamera.OnUpdate(ts);
+
+		if (m_IsPlayMode)
+			activeScene->OnUpdateRuntime(ts);
+		else
+			activeScene->OnUpdateEditor(ts);
 
 		// Render
 		Renderer2D::ResetStats();
-		m_Framebuffer->Bind();
+		m_ViewportFramebuffer->Bind();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 		RenderCommand::Clear();
 
-		m_Framebuffer->ClearAttachment(1, -1);
+		m_ViewportFramebuffer->ClearAttachment(1, -1);
 
 		{
-			//static float rotation = 0.0f;
-			//rotation += ts * 30.0f;
 			CM_PROFILE_SCOPE("Renderer Draw");
 
-			m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
-			//Renderer2D::DrawRotatedQuad({ -1.0f, 0.0f, 0.0f }, { 1.3f, 1.5f }, glm::radians(rotation), { 0.8f, 0.2f, 0.3f, 1.0f });
-			//Renderer2D::DrawQuad({ 0.5f, -0.5f, 0.0f }, { 0.5f, 0.75f }, { 0.2f, 0.3f, 0.8f, 1.0f });
-			//Renderer2D::DrawRotatedQuad({ 0.2f, 0.5f, -0.2f }, { 0.9f, 0.8f }, glm::radians(-rotation / 2), m_LaurTexture, 2.0f, glm::vec4(1.0f, 0.8f, 0.7f, 1.0f));
-
-			/*Renderer2D::BeginScene(m_CameraController.GetCamera());
-			for (float y = -5.0f; y < 5; y += 0.5)
-			{
-				for (float x = -5.0f; x < 5; x += 0.5)
-				{
-					glm::vec4 color = { (x + 5) / 10.0f, 0.4f, (y + 5) / 10.0f, 0.6f };
-					Renderer2D::DrawQuad({ x, y, -0.9f }, { 0.45f, 0.45f }, color);
-				}
-			}
-			Renderer2D::EndScene();*/
+			activeScene->OnRenderEditor(m_EditorCamera);
 		}
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -174,23 +169,70 @@ namespace Chimera
 		if (mouseX >= 0 && mouseY >= 0 && mouseX <= (int)viewportSize.x && mouseY <= (int)viewportSize.y)
 		{
 
-			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData <= -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
+			int pixelData = m_ViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
+			m_HoveredEntity = pixelData <= -1 ? Entity() : Entity((entt::entity)pixelData, activeScene.get());
 			//CM_CORE_INFO("{0}", pixelData);
 			//CM_CORE_INFO("{0}, {1}", mouseX, mouseY);
 		}
 
-		m_Framebuffer->Unbind();
+		m_ViewportFramebuffer->Unbind();
+
+		m_GameWindowFramebuffer->Bind();
+
+		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		RenderCommand::Clear();
+		m_GameWindowFramebuffer->ClearAttachment(1, -1);
+
+		activeScene->OnRenderRuntime();
+
+		m_GameWindowFramebuffer->Unbind();
 	}
 
 	void EditorLayer::OnFixedUpdate(float fixedts)
 	{
-		m_ActiveScene->OnFixedUpdateEditor(fixedts);
+		if(m_IsPlayMode)
+			SceneManager::Get().GetActiveScene()->OnFixedUpdate(fixedts);
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
 		CM_PROFILE_FUNCTION();
+
+		ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_AlwaysAutoResize;
+		if (m_ShowProjectWindow)
+		{
+			ImGui::OpenPopup("Project Window");
+
+			if (ImGui::BeginPopupModal("Project Window"), &m_ShowProjectWindow, modalFlags)
+			{
+				int width = ImGui::GetWindowSize().x;
+				int height = ImGui::GetWindowSize().y;
+
+				ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+
+				ImGui::SetCursorPosX(width / 2.0f - width/6.0f);
+				ImGui::SetCursorPosY(height / 2.0f - height / 3.0f);
+				if (ImGui::Button("New Project", ImVec2(width / 3, height / 4)))
+				{
+					ImGui::CloseCurrentPopup();
+					m_ShowProjectWindow = false;
+					SetProject();
+				}
+
+				ImGui::Spacing();
+				ImGui::SetCursorPosX(width / 2.0f - width / 6.0f);
+				if (ImGui::Button("Open Project", ImVec2(width / 3, height / 4)))
+				{
+					ImGui::CloseCurrentPopup();
+					m_ShowProjectWindow = false;
+					SetProject();
+				}
+
+				ImGui::PopFont();
+				ImGui::EndPopup();
+			}
+		}
 
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -238,31 +280,35 @@ namespace Chimera
 		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
-		style.WindowMinSize.x = 320.0f;
+		style.WindowMinSize.x = 200.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
-		style.WindowMinSize.x = 32.0f;
+		//style.WindowMinSize.x = 32.0f;
 
-		if (ImGui::BeginMenuBar())
+		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("New", "Ctrl+N"))
+				if (ImGui::MenuItem("New Scene", "Ctrl+N"))
 				{
 					NewScene();
 				}
 
-				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+				if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
 				{
+					if (ProjectManager::Get().GetProjectPath() == "")
+						SetProject();
 					OpenScene();
 				}
 
-				if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
+				if (ImGui::MenuItem("Save Scene as...", "Ctrl+Shift+S"))
 				{
+					if (ProjectManager::Get().GetProjectPath() == "")
+						SetProject();
 					SaveSceneAs();
 				}
 
@@ -270,10 +316,79 @@ namespace Chimera
 				if (ImGui::MenuItem("Exit")) Application::Get().Close();
 				ImGui::EndMenu();
 			}
+
+			if (ImGui::BeginMenu("Project"))
+			{
+				if (ImGui::MenuItem("Set..."))
+				{
+					SetProject();
+				}
+
+				if (ImGui::MenuItem("Scene Manager"))
+				{
+					m_SceneManagerPanel.SetPanelVisiblity(true);
+				}
+
+				if (ImGui::MenuItem("Build"))
+				{
+					BuildProject();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			static const ImVec4 disabledColor = { 0.5f, 0.7f, 0.5f, 1.0f };
+			int width = ImGui::GetWindowSize().x;
+			int height = ImGui::GetWindowSize().y;
+
+			ImGui::SetCursorPosX(width / 2.0f - 32);
+
+			// Play button
+			if (m_IsPlayMode)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
+				// Play button
+				if (ImGui::Button(u8"\uf04B", ImVec2(32, 20)))
+				{
+					m_IsPlayMode = false;
+					RestoreSceneFromPlayMode();
+				}
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();	
+
+				// Stop button
+				if (ImGui::Button(u8"\uf04D", ImVec2(32, 20)))
+				{
+					m_IsPlayMode = false;
+					RestoreSceneFromPlayMode();
+				}
+
+			}
+			else
+			{
+				if (ImGui::Button(u8"\uf04B", ImVec2(32, 20)))
+				{
+					m_IsPlayMode = true;
+					SceneManager::Get().SerializePlayMode();
+					LuaManager::Get().RefreshScripts();
+				}
+
+				ImGui::Button(u8"\uf04D", ImVec2(32, 20));
+			}
+
 			ImGui::EndMenuBar();
 		}
 
 		m_SceneHierarchyPanel.OnImGuiRender();
+		m_SceneManagerPanel.OnImGuiRender();
 
 		ImGui::Begin("Stats");
 
@@ -306,10 +421,10 @@ namespace Chimera
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		m_ViewportSize = { viewportPanelSize.x,  viewportPanelSize.y };
 		
-		uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		uint64_t textureID = m_ViewportFramebuffer->GetColorAttachmentRendererID();
 		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-		//Gizmos
+		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GizmoType != -1)
 		{
@@ -364,8 +479,31 @@ namespace Chimera
 
 		m_AssetManagerPanel.OnImGuiRender();
 
-		ImGui::PopStyleVar(ImGuiStyleVar_WindowPadding);
+		ImGui::Begin(u8"\uf01D" " Game");
 
+		auto gameWindowMinRegion = ImGui::GetWindowContentRegionMin();
+		auto gameWindowMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto gameWindowOffset = ImGui::GetWindowPos();
+		m_GameWindowBounds[0] = { gameWindowMinRegion.x + gameWindowOffset.x, gameWindowMinRegion.y + gameWindowOffset.y };
+		m_GameWindowBounds[1] = { gameWindowMaxRegion.x + gameWindowOffset.x, gameWindowMaxRegion.y + gameWindowOffset.y };
+
+		/*m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportHovered = ImGui::IsWindowHovered();
+		if (!ImGui::IsAnyItemActive())
+			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+		else
+			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);*/
+
+
+		ImVec2 gameWindowPanelSize = ImGui::GetContentRegionAvail();
+		m_GameWindowSize = { gameWindowPanelSize.x,  gameWindowPanelSize.y };
+
+		uint64_t gameWindowTextureID = m_GameWindowFramebuffer->GetColorAttachmentRendererID();
+		ImGui::Image(reinterpret_cast<void*>(gameWindowTextureID), ImVec2{ m_GameWindowSize.x, m_GameWindowSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		ImGui::End();
+
+		ImGui::PopStyleVar(ImGuiStyleVar_WindowPadding);
 		ImGui::End();
 	}
 
@@ -433,30 +571,120 @@ namespace Chimera
 	}
 	void EditorLayer::NewScene()
 	{
-		m_ActiveScene = CreateRef<Scene>();
-		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		if (!m_IsPlayMode)
+		{
+			Ref<Scene> activeScene = SceneManager::Get().NewScene((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_SceneHierarchyPanel.SetContext(activeScene);
+			m_SceneManagerPanel.SetActiveScenePath("");
+		}
 	}
 	void EditorLayer::OpenScene()
 	{
-		std::string filepath = FileDialogs::OpenFile("Chimera Scene (*.chimera)\0*.chimera\0");
-		if (!filepath.empty())
+		if (!m_IsPlayMode)
 		{
-			m_ActiveScene = CreateRef<Scene>();
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			std::string filepath = FileDialogs::OpenFile("Chimera Scene (*.chimera)\0*.chimera\0");
+			std::string relativePath = filepath;
 
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Deserialize(filepath);
+			if (!filepath.empty() && StringUtils::TransformIntoRelativePath(ProjectManager::Get().GetProjectPath() + "\\assets", relativePath))
+			{
+				Ref<Scene> activeScene = SceneManager::Get().NewScene((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_SceneHierarchyPanel.SetContext(activeScene);
+				m_SceneManagerPanel.SetActiveScenePath(relativePath);
+
+				SceneManager::Get().DeserializeActiveScene(filepath);
+
+				ProjectManager::Get().SetLastOpenScenePath(relativePath);
+				ProjectSerializer projectSerializer;
+				projectSerializer.SerializeEditorSettings();
+			}
 		}
 	}
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = FileDialogs::SaveFile("Chimera Scene (*.chimera)\0*.chimera\0");
+		if (!m_IsPlayMode)
+		{
+			std::string filepath = FileDialogs::SaveFile("Chimera Scene (*.chimera)\0*.chimera\0");
+			std::string relativePath = filepath;
+
+			if (!filepath.empty() && StringUtils::TransformIntoRelativePath(ProjectManager::Get().GetProjectPath() + "\\assets", relativePath))
+			{
+				SceneManager::Get().SerializeActiveScene(filepath);
+
+				ProjectManager::Get().SetLastOpenScenePath(relativePath);
+				ProjectSerializer projectSerializer;
+				projectSerializer.SerializeEditorSettings();
+				m_SceneManagerPanel.SetActiveScenePath(relativePath);
+			}
+		}
+
+	}
+
+	void EditorLayer::SetProject()
+	{
+		std::string filepath = FileDialogs::SelectFolder();
 		if (!filepath.empty())
 		{
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.Serialize(filepath);
+			ProjectManager::Get().SetProjectPath(filepath);
+			m_SceneHierarchyPanel.SetRootPath(filepath + "\\assets");
+			if (!FileDialogs::IsDirectory(filepath + "\\library"))
+			{
+				ProjectManager::Get().SetProjectDirectories();
+				//ProjectManager::Get().SetProjectPath(filepath);
+				m_AssetManagerPanel.Init();
+				NewScene();
+				return;
+			}
+			OpenProject(filepath);
 		}
+	}
+	void EditorLayer::OpenProject(const std::string& path)
+	{
+		std::string filepath;
+		if (path == "")
+			filepath = FileDialogs::SelectFolder();
+		else
+			filepath = path;
+
+		m_AssetManagerPanel.Init();
+		ProjectManager& manager = ProjectManager::Get();
+
+		ProjectSerializer projectSerializer;
+		projectSerializer.DeserializeEditorSettings();
+		projectSerializer.DeserializeBuildSettings();
+
+		Ref<Scene> activeScene = SceneManager::Get().NewScene((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(activeScene);
+		activeScene->OnViewportResize(m_GameWindowSize.x, m_GameWindowSize.y);
+
+		std::string relativePath = manager.GetLastOpenScenePath();
+		if (relativePath != "")
+		{
+			SceneManager::Get().DeserializeActiveScene(manager.GetProjectPath() + "\\assets" + manager.GetLastOpenScenePath());
+
+			m_SceneManagerPanel.SetActiveScenePath(relativePath);
+		}
+		else
+			m_SceneManagerPanel.SetActiveScenePath("");
+
+	}
+	void EditorLayer::BuildProject()
+	{
+		std::string filepath = FileDialogs::SelectFolder();
+		if (!filepath.empty())
+		{
+			std::string projectPath = ProjectManager::Get().GetProjectPath();
+			FileDialogs::CopyDirectory(projectPath + "\\assets", filepath + "\\assets");
+			FileDialogs::CopyDirectory(projectPath + "\\library", filepath + "\\library");
+			FileDialogs::CopyDirectory(projectPath + "\\.BuildSettings", filepath + "\\.BuildSettings");
+			FileDialogs::CopyItem(FileDialogs::GetExecutableDirectory() + "\\Sandbox.exe", filepath + "\\Sandbox.exe");
+		}
+	}
+	void EditorLayer::RestoreSceneFromPlayMode()
+	{
+		Ref<Scene> activeScene = SceneManager::Get().NewScene((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(activeScene);
+
+		SceneManager::Get().DeserializePlayMode();
+		activeScene->OnViewportResize(m_GameWindowSize.x, m_GameWindowSize.y);
 	}
 }

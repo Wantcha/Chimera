@@ -167,6 +167,7 @@
     <ClInclude Include="src\Chimera\Events\Event.h" />
     <ClInclude Include="src\Chimera\Events\KeyEvent.h" />
     <ClInclude Include="src\Chimera\Events\MouseEvent.h" />
+    <ClInclude Include="src\Chimera\ImGui\FontAwesome.h" />
     <ClInclude Include="src\Chimera\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Chimera\Math\Math.h" />
     <ClInclude Include="src\Chimera\Physics\BoxCollider2DComponent.h" />
@@ -194,11 +195,13 @@
     <ClInclude Include="src\Chimera\Scene\Entity.h" />
     <ClInclude Include="src\Chimera\Scene\Scene.h" />
     <ClInclude Include="src\Chimera\Scene\SceneCamera.h" />
+    <ClInclude Include="src\Chimera\Scene\SceneManager.h" />
     <ClInclude Include="src\Chimera\Scene\SceneSerializer.h" />
     <ClInclude Include="src\Chimera\Scene\ScriptableEntity.h" />
     <ClInclude Include="src\Chimera\Scripting\LuaManager.h" />
     <ClInclude Include="src\Chimera\Scripting\LuaScriptComponent.h" />
     <ClInclude Include="src\Chimera\Utils\PlatformUtils.h" />
+    <ClInclude Include="src\Chimera\Utils\Utils.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLFramebuffer.h" />
@@ -650,9 +653,11 @@
     <ClCompile Include="src\Chimera\Scene\Entity.cpp" />
     <ClCompile Include="src\Chimera\Scene\Scene.cpp" />
     <ClCompile Include="src\Chimera\Scene\SceneCamera.cpp" />
+    <ClCompile Include="src\Chimera\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Chimera\Scene\SceneSerializer.cpp" />
     <ClCompile Include="src\Chimera\Scripting\LuaManager.cpp" />
     <ClCompile Include="src\Chimera\Scripting\LuaScriptComponent.cpp" />
+    <ClCompile Include="src\Chimera\Utils\Utils.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLFramebuffer.cpp" />

@@ -8,10 +8,13 @@
 #include "Chimera/Assets/AssetManager.h"
 #include "Chimera/Scripting/LuaManager.h"
 #include "Chimera/Scripting/LuaScriptComponent.h"
+#include "Chimera/Scene/SceneManager.h"
+#include "Chimera/Utils/PlatformUtils.h"
 
 #include <GLFW/glfw3.h>
 
 namespace Chimera {
+#define EDITOR
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
@@ -27,10 +30,16 @@ namespace Chimera {
 		m_Window = Window::Create(WindowProps(name));
 		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 
+		AssetManager::SetGameDirectory(FileDialogs::GetExecutableDirectory());
+
 		Renderer::Init();
 
+#ifdef EDITOR
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
+#else
+		SceneManager::Get().DeserializeSceneList();
+#endif
 
 		AssetManager::RegisterCache(CreateScope<AssetCache<Texture2D>>());
 		//AssetManager::RegisterCache(CreateScope<AssetCache<LuaScriptComponent>>());
@@ -117,11 +126,12 @@ namespace Chimera {
 				fixedUpdateTime -= m_FixedTimeStep;
 			}
 
-
+#ifdef EDITOR
 			m_ImGuiLayer->Begin();
 			for (Layer* layer : m_LayerStack)
 				layer->OnImGuiRender();
 			m_ImGuiLayer->End();
+#endif
 
 			m_Window->OnUpdate();
 		}

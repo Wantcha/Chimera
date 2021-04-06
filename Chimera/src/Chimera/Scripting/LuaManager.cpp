@@ -1,6 +1,7 @@
 #include "cmpch.h"
 #include "LuaManager.h"
 #include "Chimera/Scene/Scene.h"
+#include "Chimera/Scene/SceneManager.h"
 #include "Chimera/Scene/Components.h"
 #include "Chimera/Core/Input.h"
 #include "Chimera/Core/Keycodes.h"
@@ -29,8 +30,10 @@ namespace Chimera
 
 		auto entity_type = m_State.new_usertype<Entity>("Entity", sol::no_constructor);
 		entity_type["name"] = sol::property( &Entity::GetName, &Entity::SetName );
+		entity_type["enabled"] = sol::property( &Entity::IsEnabled, &Entity::SetEnabled );
 
 		m_State.set_function("GetEntityByName", &LuaManager::GetEntityByName, this);
+		m_State.set_function("CreateEmptyEntity", &LuaManager::CreateEmptyEntity, this);
 
 		BindMath();
 		BindApp();
@@ -85,13 +88,42 @@ namespace Chimera
 				}
 			});
 	}
+	void LuaManager::FixedUpdateScripts(float fixedts)
+	{
+		auto& registry = m_CurrentScene->m_Registry;
+
+		//auto view = registry.view<LuaScripts>();
+
+		registry.view<LuaScripts>().each([=](auto entity, auto& ls)
+			{
+				for (Ref<LuaScriptComponent> lsc : ls.Scripts)
+				{
+					if (lsc->m_Env)
+					{
+						lsc->OnFixedUpdate(fixedts);
+					}
+				}
+			});
+	}
+	void LuaManager::RefreshScripts()
+	{
+		auto& registry = m_CurrentScene->m_Registry;
+		registry.view<LuaScripts>().each([=](auto entity, auto& ls)
+			{
+				for (Ref<LuaScriptComponent> lsc : ls.Scripts)
+				{
+					lsc->Load(lsc->GetFilePath());
+				}
+			});
+	}
 	void LuaManager::BindMath()
 	{
 		m_State.new_usertype<glm::vec2>("Vector2", sol::constructors<glm::vec2(float, float)>(),
 			"x", &glm::vec2::x,
 			"y", &glm::vec2::y,
 			sol::meta_function::addition, [](const glm::vec2& l, const glm::vec2& r) { return glm::vec2(l.x + r.x, l.y + r.y); },
-			sol::meta_function::subtraction, [](const glm::vec2& l, const glm::vec2& r) { return glm::vec2(l.x - r.x, l.y - r.y); }
+			sol::meta_function::subtraction, [](const glm::vec2& l, const glm::vec2& r) { return glm::vec2(l.x - r.x, l.y - r.y); },
+			sol::meta_function::multiplication, [](const glm::vec2& l, const float r) { return glm::vec2(l.x * r, l.y * r); }
 			);
 
 		m_State.new_usertype<glm::vec3>("Vector3", sol::constructors<glm::vec3(float, float, float)>(),
@@ -99,7 +131,8 @@ namespace Chimera
 			"y", &glm::vec3::y,
 			"z", &glm::vec3::z,
 			sol::meta_function::addition, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x + r.x, l.y + r.y, l.z + r.z); },
-			sol::meta_function::subtraction, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x - r.x, l.y - r.y, l.z - r.z); }
+			sol::meta_function::subtraction, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x - r.x, l.y - r.y, l.z - r.z); },
+			sol::meta_function::multiplication, [](const glm::vec3& l, const float r) { return glm::vec3(l.x * r, l.y * r, l.z * r); }
 		);
 	}
 	Entity LuaManager::GetEntityByName(const std::string& name)
@@ -116,6 +149,10 @@ namespace Chimera
 				}
 			});
 		return Entity{ a, m_CurrentScene };
+	}
+	Entity LuaManager::CreateEmptyEntity(const std::string& name)
+	{
+		return m_CurrentScene->CreateEntity(name);
 	}
 	void LuaManager::BindECS()
 	{
@@ -164,7 +201,10 @@ namespace Chimera
 			"gravityScale", sol::property(&RigidBody2DComponent::GetGravityScale, &RigidBody2DComponent::SetGravityScale),
 			"discreteCollision", sol::property(&RigidBody2DComponent::IsDiscreteCollision, &RigidBody2DComponent::SetDiscreteCollision),
 			"fixedRotation", sol::property(&RigidBody2DComponent::IsFixedRotation, &RigidBody2DComponent::SetFixedRotation),
-			"bodyType", sol::property(&RigidBody2DComponent::GetBodyType, &RigidBody2DComponent::SetBodyType)
+			"bodyType", sol::property(&RigidBody2DComponent::GetBodyType, &RigidBody2DComponent::SetBodyType),
+			"velocity", sol::property(&RigidBody2DComponent::GetLinearVelocity, &RigidBody2DComponent::SetLinearVelocity),
+			"ApplyForce", &RigidBody2DComponent::ApplyForce,
+			"ApplyForceAtPoint", &RigidBody2DComponent::ApplyForceAtPoint
 			);
 
 		std::initializer_list<std::pair<sol::string_view, RigidBody2DComponent::Body2DType>> body2DTypes =
@@ -205,6 +245,25 @@ namespace Chimera
 			);
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, CircleCollider2DComponent);
+
+		auto luaScript_type = m_State.new_usertype<LuaScriptComponent>("LuaScriptComponent", sol::no_constructor,
+			"path", sol::property(&LuaScriptComponent::GetFilePath, &LuaScriptComponent::SetFilePath)
+			);
+
+		/*entity_type.set_function("AddLuaScriptComponent", [&]() {
+				if (entity_type.HasComponent<LuaScripts>())
+				{
+					entity_type.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>());
+				}
+
+				else
+				{
+					LuaScripts& ls = m_SelectionContext.AddComponent<LuaScripts>();
+					ls.Scripts.push_back(CreateRef<LuaScriptComponent>());
+				}
+			});
+		entity_type.set_function("Remove", &Entity::RemoveComponent<component>);
+		entity_type.set_function("Get", &Entity::GetComponent<LuaScripts>);*/
 	}
 	void LuaManager::BindInput()
 	{
@@ -328,6 +387,13 @@ namespace Chimera
 	}
 	void LuaManager::BindScene()
 	{
+		//static const std::string sceneManagerKey = "SceneManager::Get()";
+		SceneManager& manager = SceneManager::Get();
+
+		m_State.new_usertype<SceneManager>("SceneManager", sol::no_constructor,
+			"LoadScene", &SceneManager::LoadScene);
+
+		m_State.set("sceneManager", &manager);
 	}
 	void LuaManager::BindApp()
 	{
@@ -351,10 +417,10 @@ namespace Chimera
 			"normal", &Contact2D::Normal);
 
 		m_State.new_usertype<Collider2D>("Collider2D", sol::no_constructor,
-			"isSensor", sol::property( &Collider2D::IsSensor, &Collider2D::SetSensor ),
-			"bounciness", sol::property( &Collider2D::GetBounciness, &Collider2D::SetBounciness ),
-			"friction", sol::property( &Collider2D::GetFriction, &Collider2D::SetFriction ),
-			"density", sol::property( &Collider2D::GetDensity, &Collider2D::SetDensity )/*,
-			"GetEntity", &Collider2D::GetEntity*/);
+			"isSensor", sol::property(&Collider2D::IsSensor, &Collider2D::SetSensor),
+			"bounciness", sol::property(&Collider2D::GetBounciness, &Collider2D::SetBounciness),
+			"friction", sol::property(&Collider2D::GetFriction, &Collider2D::SetFriction),
+			"density", sol::property(&Collider2D::GetDensity, &Collider2D::SetDensity),
+			"GetEntity", &Collider2D::GetEntity);
 	}
 }

@@ -14,66 +14,72 @@ namespace Chimera
 		Entity* entityB = (Entity*)colliderB->GetBody()->GetUserData().pointer;
 
 
-		if (entityA->HasComponent<LuaScriptComponent>())
+		if (entityA->HasComponent<LuaScripts>())
 		{
-			auto& lsc = entityA->GetComponent<LuaScriptComponent>();
-			if (lsc.GetSolEnvironment() != nullptr)
+			LuaScripts& ls = entityA->GetComponent<LuaScripts>();
+			for (Ref<LuaScriptComponent> lsc : ls.Scripts)
 			{
-				if (contact->GetFixtureA()->IsSensor())
+				if (lsc->GetSolEnvironment() != nullptr)
 				{
-					lsc.OnSensorEnter2D(colliderB);
-				}
-
-				else
-				{
-					c.Entity = entityB;
-					int points = contact->GetManifold()->pointCount;
-
-					b2WorldManifold wm;
-					contact->GetWorldManifold(&wm);
-
-					for (int i = 0; i < points; i++) {
-						c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+					if (contact->GetFixtureA()->IsSensor())
+					{
+						lsc->OnSensorEnter2D(colliderB);
 					}
-					c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
-					c.Collider = colliderA;
-					c.OtherCollider = colliderB;
 
-					lsc.OnCollisionEnter2D(c);
+					else
+					{
+						c.Entity = entityB;
+						int points = contact->GetManifold()->pointCount;
+
+						b2WorldManifold wm;
+						contact->GetWorldManifold(&wm);
+
+						for (int i = 0; i < points; i++) {
+							c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+						}
+						c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
+						c.Collider = colliderA;
+						c.OtherCollider = colliderB;
+
+						lsc->OnCollisionEnter2D(c);
+					}
+
 				}
-
 			}
 
 		}
 
-		if (entityB->HasComponent<NativeScriptComponent>())
+		if (entityB->HasComponent<LuaScripts>())
 		{
-			auto& lsc = entityA->GetComponent<LuaScriptComponent>();
-			if (lsc.GetSolEnvironment() != nullptr)
+			LuaScripts& ls = entityB->GetComponent<LuaScripts>();
+			for (Ref<LuaScriptComponent> lsc : ls.Scripts)
 			{
-				if (contact->GetFixtureB()->IsSensor())
+				if (lsc->GetSolEnvironment() != nullptr)
 				{
-					lsc.OnSensorEnter2D(colliderA);
-				}
-
-				else
-				{
-					c.Entity = entityA;
-					int points = contact->GetManifold()->pointCount;
-
-					b2WorldManifold wm;
-					contact->GetWorldManifold(&wm);
-
-					for (int i = 0; i < points; i++) {
-						c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+					if (contact->GetFixtureB()->IsSensor())
+					{
+						lsc->OnSensorEnter2D(colliderA);
 					}
-					c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
-					c.Collider = colliderB;
-					c.OtherCollider = colliderA;
 
-					lsc.OnCollisionEnter2D(c);
+					else
+					{
+						c.Entity = entityA;
+						int points = contact->GetManifold()->pointCount;
+
+						b2WorldManifold wm;
+						contact->GetWorldManifold(&wm);
+
+						for (int i = 0; i < points; i++) {
+							c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+						}
+						c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
+						c.Collider = colliderB;
+						c.OtherCollider = colliderA;
+
+						lsc->OnCollisionEnter2D(c);
+					}
+
 				}
-
 			}
 		}
 	}
@@ -87,67 +93,73 @@ namespace Chimera
 		Entity* entityB = (Entity*)colliderB->GetBody()->GetUserData().pointer;
 
 
-		if (entityA->HasComponent<LuaScriptComponent>())
+		if (entityA->HasComponent<LuaScripts>())
 		{
-			auto& lsc = entityA->GetComponent<LuaScriptComponent>();
-			if (lsc.GetSolEnvironment() != nullptr)
+			LuaScripts& ls = entityA->GetComponent<LuaScripts>();
+			for (Ref<LuaScriptComponent> lsc : ls.Scripts)
 			{
-				if (contact->GetFixtureA()->IsSensor())
+				if (lsc->GetSolEnvironment() != nullptr)
 				{
-					lsc.OnSensorExit2D(colliderB);
-				}
-
-				else
-				{
-					c.Entity = entityA;
-					int points = contact->GetManifold()->pointCount;
-
-					b2WorldManifold wm;
-					contact->GetWorldManifold(&wm);
-
-					for (int i = 0; i < points; i++) {
-						c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+					if (contact->GetFixtureA()->IsSensor())
+					{
+						lsc->OnSensorExit2D(colliderB);
 					}
-					c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
-					c.Collider = colliderA;
-					c.OtherCollider = colliderB;
 
-					lsc.OnCollisionExit2D(c);
+					else
+					{
+						c.Entity = entityA;
+						int points = contact->GetManifold()->pointCount;
+
+						b2WorldManifold wm;
+						contact->GetWorldManifold(&wm);
+
+						for (int i = 0; i < points; i++) {
+							c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+						}
+						c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
+						c.Collider = colliderA;
+						c.OtherCollider = colliderB;
+
+						lsc->OnCollisionExit2D(c);
+					}
+
 				}
-
 			}
-
 		}
 
-		if (entityB->HasComponent<NativeScriptComponent>())
+		if (entityB->HasComponent<LuaScripts>())
 		{
-			auto& lsc = entityA->GetComponent<LuaScriptComponent>();
-			if (lsc.GetSolEnvironment() != nullptr)
+			LuaScripts& ls = entityB->GetComponent<LuaScripts>();
+			for (Ref<LuaScriptComponent> lsc : ls.Scripts)
 			{
-				if (contact->GetFixtureB()->IsSensor())
+				if (lsc->GetSolEnvironment() != nullptr)
 				{
-					lsc.OnSensorExit2D(colliderA);
-				}
-
-				else
-				{
-					c.Entity = entityB;
-					int points = contact->GetManifold()->pointCount;
-
-					b2WorldManifold wm;
-					contact->GetWorldManifold(&wm);
-
-					for (int i = 0; i < points; i++) {
-						c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+					if (contact->GetFixtureB()->IsSensor())
+					{
+						lsc->OnSensorExit2D(colliderA);
 					}
-					c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
-					c.Collider = colliderB;
-					c.OtherCollider = colliderA;
 
-					lsc.OnCollisionExit2D(c);
+					else
+					{
+						c.Entity = entityB;
+						int points = contact->GetManifold()->pointCount;
+
+						b2WorldManifold wm;
+						contact->GetWorldManifold(&wm);
+
+						for (int i = 0; i < points; i++) {
+							c.ContactPositions[i] = glm::vec3{ wm.points[i].x, wm.points[i].y, 0.0f };
+						}
+						c.Normal = glm::vec2{ wm.normal.x, wm.normal.y };
+						c.Collider = colliderB;
+						c.OtherCollider = colliderA;
+
+						lsc->OnCollisionExit2D(c);
+					}
+
 				}
-
 			}
+
 		}
 	}
 }

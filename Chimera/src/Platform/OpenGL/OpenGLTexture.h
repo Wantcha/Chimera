@@ -16,6 +16,9 @@ namespace Chimera
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
+		virtual std::string GetFilepath() const override { return m_Path; }
+		virtual void SetFilepath(const std::string& path) override { m_Path = path; }
+
 		virtual void SetData(void* data, uint32_t size) override;
 
 		virtual void Bind(uint32_t slot = 0) const override;

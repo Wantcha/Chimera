@@ -4,6 +4,8 @@
 #include "Chimera/Scene/Components.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "Chimera/Assets/AssetManager.h"
+#include "Chimera/Utils/Utils.h"
+#include "Chimera/Scene/SceneManager.h"
 
 namespace Chimera
 {
@@ -16,15 +18,15 @@ namespace Chimera
 		m_Context = context;
 		m_SelectionContext = {};
 
-		m_CurrentPath = fs::current_path();
-		m_CurrentPath /= "assets";
-		m_IsCurrentPathDir = true;
+		//m_CurrentPath = m_RootPath;
+		//m_CurrentPath /= "assets";
+		//m_IsCurrentPathDir = true;
 
-		m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+		//m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
 	}
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		ImGui::Begin("Scene Hierarchy");
+		ImGui::Begin(u8"\uf00B" " Scene Hierarchy");
 
 
 		for(int i = 0; i < m_Context->m_RootEntityList.size(); ++i)
@@ -37,21 +39,7 @@ namespace Chimera
 		}
 
 		ImGui::BeginChild("Empty Space");
-		ImGui::EndChild();
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Entity"))
-			{
-				IM_ASSERT(payload->DataSize == sizeof(Entity));
-				Entity payload_n = *(const Entity*)payload->Data;
-
-				payload_n.GetComponent<TransformComponent>().SetParent(nullptr);
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		// Right-click on blank space
+		// Right-click on blank space below hierarchy
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
 			if (ImGui::BeginMenu("Create..."))
@@ -79,9 +67,42 @@ namespace Chimera
 			ImGui::EndPopup();
 		}
 
+		
+		ImGui::EndChild();
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_Entity"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(Entity));
+				Entity payload_n = *(const Entity*)payload->Data;
+
+				if(payload_n.GetComponent<TransformComponent>().GetParent())
+					payload_n.GetComponent<TransformComponent>().SetParent(nullptr);
+				else
+				{
+					m_Context->RemoveRootEntity(payload_n);
+
+					m_Context->m_RootEntityList.insert(m_Context->m_RootEntityList.end(), payload_n);
+				}
+				
+			}
+
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_File"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(std::filesystem::path));
+				std::filesystem::path payload_n = *(const std::filesystem::path*)payload->Data;
+
+				SceneManager::Get().DeserializeEntity(payload_n.string());
+
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
 		ImGui::End();
 
-		ImGui::Begin("Properties");
+		ImGui::Begin(u8"\uf02C" " Properties");
 		if (m_SelectionContext)
 		{
 			DrawComponents(m_SelectionContext);
@@ -94,6 +115,8 @@ namespace Chimera
 	}
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
+		/*if (entity == nullptr)
+			return;*/
 		auto& name = entity.GetComponent<TagComponent>().Name;
 		std::vector<Entity>& children = entity.GetComponent<TransformComponent>().GetChildren();
 
@@ -197,14 +220,10 @@ namespace Chimera
 
 		if (entityDeleted)
 		{
-			if (entity.HasComponent<Body2DComponent>())
-			{
-				entity.RemoveComponent<Body2DComponent>();
-			}
-
-			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity)
 				m_SelectionContext = {};
+			m_Context->DestroyEntity(entity);
+			
 		}
 
 	}
@@ -317,6 +336,107 @@ namespace Chimera
 				entity.RemoveComponent<T>();
 			//ImGui::Separator();
 		}
+	}
+
+	std::string SceneHierarchyPanel::OpenAssetSelector(std::vector<std::string> filters)
+	{
+		std::string outPath;
+
+		ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar/* |
+			ImGuiWindowFlags_AlwaysAutoResize*/;
+
+		bool isOpen = true;
+		if (ImGui::IsItemClicked())
+		{
+			ImGui::OpenPopup("Select Asset");
+		}
+		if (ImGui::BeginPopupModal("Select Asset", &isOpen, modalFlags))
+		{
+			//Auto resize text wrap to popup width.
+			ImGui::Spacing();
+			ImGui::PushItemWidth(-1);
+			ImGui::TextWrapped(m_CurrentPath.string().data());
+			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+
+			// Make the "Select" button look / act disabled if the current selection is a directory.
+			if (m_IsCurrentPathDir)
+			{
+				static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
+
+				ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
+
+				ImGui::Button("Select");
+
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+			}
+			else
+			{
+
+				if (ImGui::Button("Select"))
+				{
+					ImGui::CloseCurrentPopup();
+
+					outPath = m_CurrentPath.string();
+					StringUtils::TransformIntoRelativePath(m_RootPath.string(), outPath);
+				}
+
+			}
+
+			ImGui::PushItemWidth(-1);
+			if (ImGui::BeginListBox("##"))
+			{
+				bool placeholder = false;
+				bool show;
+
+				if (ImGui::Selectable("None"))
+				{
+					m_CurrentPath = "None";
+					m_IsCurrentPathDir = false;
+				}
+				for (ImGuiFilepath::File& file : m_FilesInScope)
+				{
+					show = true;
+					std::filesystem::path path = file.Path;
+					std::string& extension = path.extension().string();
+
+					if (!filters.empty())
+					{
+						show = false;
+						for (std::string& filter : filters)
+						{
+							if (extension == filter)
+								show = true;
+						}
+					}
+
+					m_IsCurrentPathDir = fs::is_directory(path);
+					if (show || m_IsCurrentPathDir)
+					{
+						if (ImGui::Selectable(file.Alias.c_str(), &placeholder))
+						{
+							m_CurrentPath = path;
+							if (m_IsCurrentPathDir) {
+								m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
+								break;
+							}
+						}
+					}	
+				}
+				ImGui::EndListBox();
+			}
+
+			ImGui::PopItemWidth();
+			ImGui::EndPopup();
+		}
+		//CM_CORE_WARN(outPath);
+		return outPath;
+		
 	}
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
@@ -496,78 +616,23 @@ namespace Chimera
 				ImGui::Text("Texture");
 				ImGui::SameLine();
 
+				//std::string outPath;
 				//Ref<Texture2D>& tex = component.SpriteTexture;
-				std::string outPath = "";
 
 				ImGui::Image(reinterpret_cast<void*>(component.SpriteTexture->GetRendererID()), ImVec2{ 30, 30 }, ImVec2{ 0,1 }, ImVec2{ 1,0 },
 					{ component.Color.x, component.Color.y, component.Color.z, component.Color.w });
-				ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
-					ImGuiWindowFlags_AlwaysAutoResize;
 
-				bool isOpen = true;
-				if (ImGui::IsItemClicked())
+				std::string outPath = OpenAssetSelector({".png", ".jpg", "jpeg", "bmp", "tga", "hdr", "psd"});
+				if (!outPath.empty())
 				{
-					ImGui::OpenPopup("SelectAsset");
-				}
-				if (ImGui::BeginPopupModal("SelectAsset", &isOpen, modalFlags))
-				{
-					//Auto resize text wrap to popup width.
-					ImGui::Spacing();
-					ImGui::PushItemWidth(-1);
-					ImGui::TextWrapped(m_CurrentPath.string().data());
-					ImGui::PopItemWidth();
-
-					//ImVec2 size = ImGui::GetContentRegionAvail();
-
-					ImGui::SameLine();
-
-					// Make the "Select" button look / act disabled if the current selection is a directory.
-					if (m_IsCurrentPathDir)
+					if (outPath == "None")
 					{
-
-						static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
-
-						ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
-
-						ImGui::Button("Select");
-
-						ImGui::PopStyleColor();
-						ImGui::PopStyleColor();
-						ImGui::PopStyleColor();
-
+						uint32_t whiteTextureData = 0xffffffff;
+						component.SpriteTexture = Texture2D::Create(1, 1);
+						component.SpriteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 					}
 					else
-					{
-
-						if (ImGui::Button("Select"))
-						{
-							ImGui::CloseCurrentPopup();
-
-							outPath = m_CurrentPath.string();
-							component.SpriteTexture = AssetManager::GetAsset<Texture2D>(outPath);  //Texture2D::Create(outPath);
-						}
-
-					}
-
-					//ImGui::Text(std::to_string(size.y / (style.ItemSpacing.y + ImGui::GetFontSize() )).c_str()  );
-					ImGui::PushItemWidth(-1);
-					if (ImGui::ListBox("##", &m_SelectionPath, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(), 5))
-					{
-						//Update current path to the selected list item.
-						m_CurrentPath = m_FilesInScope[m_SelectionPath].Path;
-						m_IsCurrentPathDir = fs::is_directory(m_CurrentPath);
-
-						//If the selection is a directory, repopulate the list with the contents of that directory.
-						if (m_IsCurrentPathDir) {
-							m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
-						}
-
-					}
-					ImGui::PopItemWidth();
-
-					ImGui::EndPopup();
+						component.SpriteTexture = AssetManager::GetAsset<Texture2D>(outPath);
 				}
 			});
 
@@ -716,6 +781,7 @@ namespace Chimera
 			{
 				const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_Framed
 					| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+
 				Ref<LuaScriptComponent> component = *it;
 				ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
@@ -759,68 +825,17 @@ namespace Chimera
 					else
 						ImGui::Text(outPath.c_str());
 
-					bool isOpen = true;
-					if (ImGui::IsItemClicked())
+					outPath = OpenAssetSelector( { ".lua" } );
+					if (!outPath.empty())
 					{
-						ImGui::OpenPopup("Select Script");
-					}
-					if (ImGui::BeginPopupModal("Select Script", &isOpen, modalFlags))
-					{
-						//Auto resize text wrap to popup width.
-						ImGui::Spacing();
-						ImGui::PushItemWidth(-1);
-						ImGui::TextWrapped(m_CurrentPath.string().data());
-						ImGui::PopItemWidth();
-
-						//ImVec2 size = ImGui::GetContentRegionAvail();
-
-						ImGui::SameLine();
-
-						// Make the "Select" button look / act disabled if the current selection is a directory.
-						if (m_IsCurrentPathDir)
+						if (outPath == "None")
 						{
-							static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
-
-							ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
-							ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
-							ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
-
-							ImGui::Button("Select");
-
-							ImGui::PopStyleColor();
-							ImGui::PopStyleColor();
-							ImGui::PopStyleColor();
-
+							component->Unload();
 						}
 						else
-						{
-							if (ImGui::Button("Select"))
-							{
-								ImGui::CloseCurrentPopup();
-
-								outPath = m_CurrentPath.string();
-								component->Load(outPath);
-							}
-						}
-
-						//ImGui::Text(std::to_string(size.y / (style.ItemSpacing.y + ImGui::GetFontSize() )).c_str()  );
-						ImGui::PushItemWidth(-1);
-						if (ImGui::ListBox("##", &m_SelectionPath, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(), 5))
-						{
-							//Update current path to the selected list item.
-							m_CurrentPath = m_FilesInScope[m_SelectionPath].Path;
-							m_IsCurrentPathDir = fs::is_directory(m_CurrentPath);
-
-							//If the selection is a directory, repopulate the list with the contents of that directory.
-							if (m_IsCurrentPathDir) {
-								m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
-							}
-
-						}
-						ImGui::PopItemWidth();
-
-						ImGui::EndPopup();
+							component->Load(outPath);
 					}
+
 					ImGui::TreePop();
 				}
 				if (removeComponent)
@@ -838,88 +853,10 @@ namespace Chimera
 
 			}
 		}
-		/*DrawComponent<LuaScriptComponent>("Custom Script", entity, [&](auto& component)
+
+		/*DrawComponent<Body2DComponent>("Body 2D Component", entity, [](auto& component)
 			{
-				ImGui::Text("Script:");
-				ImGui::SameLine();
 
-				ImGuiWindowFlags modalFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar |
-					ImGuiWindowFlags_AlwaysAutoResize;
-
-				std::string outPath = component.GetName();
-
-				if(outPath == "")
-					ImGui::Text("[NO SCRIPT]");
-				else
-					ImGui::Text(outPath.c_str());
-
-				bool isOpen = true;
-				if (ImGui::IsItemClicked())
-				{
-					ImGui::OpenPopup("Select Script");
-				}
-				if (ImGui::BeginPopupModal("Select Script", &isOpen, modalFlags))
-				{
-					//Auto resize text wrap to popup width.
-					ImGui::Spacing();
-					ImGui::PushItemWidth(-1);
-					ImGui::TextWrapped(m_CurrentPath.string().data());
-					ImGui::PopItemWidth();
-
-					//ImVec2 size = ImGui::GetContentRegionAvail();
-
-					ImGui::SameLine();
-
-					// Make the "Select" button look / act disabled if the current selection is a directory.
-					if (m_IsCurrentPathDir)
-					{
-						static const ImVec4 disabledColor = { 0.3f, 0.3f, 0.3f, 1.0f };
-
-						ImGui::PushStyleColor(ImGuiCol_Button, disabledColor);
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabledColor);
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabledColor);
-
-						ImGui::Button("Select");
-
-						ImGui::PopStyleColor();
-						ImGui::PopStyleColor();
-						ImGui::PopStyleColor();
-
-					}
-					else
-					{
-						if (ImGui::Button("Select"))
-						{
-							ImGui::CloseCurrentPopup();
-
-							outPath = m_CurrentPath.string();
-							component.Load(outPath);
-						}
-					}
-
-					//ImGui::Text(std::to_string(size.y / (style.ItemSpacing.y + ImGui::GetFontSize() )).c_str()  );
-					ImGui::PushItemWidth(-1);
-					if (ImGui::ListBox("##", &m_SelectionPath, ImGuiFilepath::vector_file_items_getter, &m_FilesInScope, m_FilesInScope.size(), 5))
-					{
-						//Update current path to the selected list item.
-						m_CurrentPath = m_FilesInScope[m_SelectionPath].Path;
-						m_IsCurrentPathDir = fs::is_directory(m_CurrentPath);
-
-						//If the selection is a directory, repopulate the list with the contents of that directory.
-						if (m_IsCurrentPathDir) {
-							m_FilesInScope = ImGuiFilepath::GetFilesInPath(m_CurrentPath, m_CurrentPath != m_RootPath);
-						}
-
-					}
-					ImGui::PopItemWidth();
-
-					ImGui::EndPopup();
-				}
 			});*/
-
-			/*DrawComponent<Body2DComponent>("Body 2D Component", entity, [](auto& component)
-				{
-
-				});*/
 	}
 }

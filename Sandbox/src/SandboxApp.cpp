@@ -10,9 +10,10 @@
 #include "Platform/OpenGL/OpenGLShader.h"
 
 #include "Sandbox2D.h"
+#include "GameLayer.h"
 
 
-class ExampleLayer : public Chimera::Layer
+/*class ExampleLayer : public Chimera::Layer
 {
 public:
 	ExampleLayer()
@@ -211,12 +212,12 @@ public:
 	{
 		m_CameraController.OnEvent(e);
 
-		/*if (e.GetEventType() == Chimera::EventType::WindowResize)
+		if (e.GetEventType() == Chimera::EventType::WindowResize)
 		{
 			auto& re = (Chimera::WindowResizeEvent&)e;
 			float zoom = (float)re.GetWidth() / 1280.0f;
 			m_CameraController.SetZoomLevel(zoom);
-		}*/
+		}
 	}
 
 private:
@@ -233,15 +234,14 @@ private:
 	Chimera::OrthographicCameraController m_CameraController;
 
 	glm::vec3 m_SquareColor = {0.2f, 0.3f, 0.8f};
-};
+};*/
 
 class Sandbox : public Chimera::Application
 {
 public:
 	Sandbox()
 	{
-		//PushLayer(new ExampleLayer());
-		PushLayer(new Sandbox2D());
+		PushLayer(new GameLayer());
 	}
 
 	~Sandbox()

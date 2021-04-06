@@ -122,7 +122,7 @@ namespace Chimera
         bool m_Stopped;
     };
 }
-#define CM_PROFILE 1
+#define CM_PROFILE 0
 #if CM_PROFILE
     #define CM_PROFILE_BEGIN_SESSION(name, filepath) ::Chimera::Instrumentor::Get().BeginSession(name, filepath)
     #define CM_PROFILE_END_SESSION() ::Chimera::Instrumentor::Get().EndSession()

@@ -3,6 +3,7 @@
 #include "Chimera.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/AssetManagerPanel.h"
+#include "Panels/SceneManagerPanel.h"
 
 #include "Chimera/Renderer/EditorCamera.h"
 
@@ -22,40 +23,40 @@ namespace Chimera
 		virtual void OnFixedUpdate(float fixedts) override;
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(Event& e) override;
+
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 		void NewScene();
 		void OpenScene();
 		void SaveSceneAs();
+		void SetProject();
+		void OpenProject(const std::string& path = "");
+		void BuildProject();
 
-		OrthographicCameraController m_CameraController;
+		void RestoreSceneFromPlayMode();
 
-		//Temp
-		//Ref<VertexArray> m_SquareVA;
-		//Ref<Shader> m_FlatColorShader;
-		//Ref<Texture2D> m_LaurTexture;
-
-		glm::vec4 m_SquareColor{0.3f, 1.0f, 1.0f, 1.0f};
-
-		Ref<Framebuffer> m_Framebuffer;
+		Ref<Framebuffer> m_ViewportFramebuffer, m_GameWindowFramebuffer;
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize = {0.0f, 0.0f};
 		glm::vec2 m_ViewportBounds[2];
 
+		glm::vec2 m_GameWindowSize = { 0.0f, 0.0f };
+		glm::vec2 m_GameWindowBounds[2];
+
 		Entity m_HoveredEntity;
 
-		Ref<Scene> m_ActiveScene;
-		Entity m_SquareEntity;
-		Entity m_CameraEntity;
-		Entity m_SecondCamera;
-
-		bool m_PrimaryCamera = true;
+		// bool m_PrimaryCamera = true;
 		EditorCamera m_EditorCamera;
 
 		int m_GizmoType = -1;
+		bool m_IsPlayMode = false;
+
 		//Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		AssetManagerPanel m_AssetManagerPanel;
+		SceneManagerPanel m_SceneManagerPanel;
+
+		bool m_ShowProjectWindow = true;
 	};
 }

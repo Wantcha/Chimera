@@ -39,13 +39,13 @@ namespace Chimera
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;
 
 		float m_OrthographicSize = 10.0f;
-		float m_OrthographicNear = -1.0f;
-		float m_OrthographicFar = 1.0f;
+		float m_OrthographicNear = 0.01f;
+		float m_OrthographicFar = 1000.0f;
 
 		float m_FOV = glm::radians(45.0f);
 		float m_PerspectiveNear = 0.01f;
 		float m_PerspectiveFar = 10000.0f;
 
-		float m_AspectRatio = 0.0f;
+		float m_AspectRatio = 1.7778f;
 	};
 }
