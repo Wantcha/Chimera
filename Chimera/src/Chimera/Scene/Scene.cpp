@@ -140,6 +140,7 @@ namespace Chimera
 			if (tag.Enabled)
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
+		Renderer2D::EndScene();
 
 		if (m_EditColliders)
 		{
@@ -149,7 +150,6 @@ namespace Chimera
 			g_debugDraw.Flush();
 		}
 
-		Renderer2D::EndScene();
 	}
 	void Scene::OnUpdateEditor(Timestep ts)
 	{

@@ -76,7 +76,7 @@ namespace Chimera
 			const char* fs = \
 				"#version 330\n"
 				"in vec4 f_color;\n"
-				"out vec4 color;\n"
+				"layout(location = 0) out vec4 color;\n"
 				"void main(void)\n"
 				"{\n"
 				"	color = f_color;\n"
@@ -214,7 +214,7 @@ namespace Chimera
 			const char* fs = \
 				"#version 330\n"
 				"in vec4 f_color;\n"
-				"out vec4 color;\n"
+				"layout(location = 0) out vec4 color;\n"
 				"void main(void)\n"
 				"{\n"
 				"	color = f_color;\n"
@@ -335,10 +335,12 @@ namespace Chimera
 			const char* fs = \
 				"#version 330\n"
 				"in vec4 f_color;\n"
-				"out vec4 color;\n"
+				"layout(location = 0) out vec4 color;\n"
+				//"layout(location = 1) out int color2;\n"
 				"void main(void)\n"
 				"{\n"
 				"	color = f_color;\n"
+				//"   color2 = 0;\n"
 				"}\n";
 
 			m_programId = sCreateShaderProgram(vs, fs);
@@ -413,10 +415,10 @@ namespace Chimera
 			glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[1]);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, m_count * sizeof(b2Color), m_colors);
 
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			//glEnable(GL_BLEND);
+			//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glDrawArrays(GL_TRIANGLES, 0, m_count);
-			glDisable(GL_BLEND);
+			//glDisable(GL_BLEND);
 
 			//sCheckGLError();
 
