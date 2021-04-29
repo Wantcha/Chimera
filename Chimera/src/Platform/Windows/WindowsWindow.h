@@ -18,6 +18,8 @@ namespace Chimera
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
+		inline int GetX() const override { return m_Data.X; }
+		inline int GetY() const override { return m_Data.Y; }
 
 		//Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
@@ -36,6 +38,7 @@ namespace Chimera
 		{
 			std::string Title;
 			unsigned int Width, Height;
+			int X = 0, Y = 0;
 			bool VSync;
 
 			EventCallbackFn EventCallback;

@@ -35,6 +35,33 @@ namespace Chimera
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	};
 
+	class CHIMERA_API WindowFocusEvent : public Event
+	{
+	public:
+		WindowFocusEvent(bool focused): m_Focused(focused) {}
+
+		inline bool GetFocus() const { return m_Focused; }
+
+		EVENT_CLASS_TYPE(WindowFocus)
+			EVENT_CLASS_CATEGORY(EventCategoryApplication)
+	private:
+		bool m_Focused;
+	};
+
+	class CHIMERA_API WindowMoveEvent : public Event
+	{
+	public:
+		WindowMoveEvent(int x, int y) : m_X(x), m_Y(y) {}
+
+		inline int GetX() const { return m_X; }
+		inline int GetY() const { return m_Y; }
+
+		EVENT_CLASS_TYPE(WindowMoved)
+			EVENT_CLASS_CATEGORY(EventCategoryApplication)
+	private:
+		int m_X, m_Y;
+	};
+
 	class CHIMERA_API AppTickEvent : public Event
 	{
 	public:

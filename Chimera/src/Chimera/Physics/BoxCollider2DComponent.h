@@ -10,7 +10,7 @@ namespace Chimera
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent& other)
 		{
-			CM_CORE_ERROR("Copying BoxCollider2DComponent...");
+			//CM_CORE_ERROR("Copying BoxCollider2DComponent...");
 			m_Body = other.m_Body;
 			m_BoxColliderShape = other.m_BoxColliderShape;
 			m_ToBeDestroyed = other.m_ToBeDestroyed;
@@ -38,7 +38,7 @@ namespace Chimera
 		}
 		BoxCollider2DComponent(BoxCollider2DComponent&& other) noexcept
 		{
-			CM_CORE_ERROR("Moving BoxCollider2DComponent...");
+			//CM_CORE_ERROR("Moving BoxCollider2DComponent...");
 			m_Body = other.m_Body;
 			m_BoxColliderShape = other.m_BoxColliderShape;
 			m_ToBeDestroyed = other.m_ToBeDestroyed;
@@ -85,7 +85,7 @@ namespace Chimera
 
 		BoxCollider2DComponent& operator=(const BoxCollider2DComponent& other)
 		{
-			CM_CORE_ERROR("Copying Operation BoxCollider2DComponent...");
+			//CM_CORE_ERROR("Copying Operation BoxCollider2DComponent...");
 			if (this != &other)
 			{
 				m_Body = other.m_Body;
@@ -117,7 +117,7 @@ namespace Chimera
 
 		BoxCollider2DComponent& operator=(BoxCollider2DComponent&& other) noexcept
 		{
-			CM_CORE_ERROR("Moving Operation BoxCollider2DComponent...");
+			//CM_CORE_ERROR("Moving Operation BoxCollider2DComponent...");
 			if (this != &other)
 			{
 				m_Body = other.m_Body;

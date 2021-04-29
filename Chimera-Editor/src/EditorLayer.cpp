@@ -136,6 +136,7 @@ namespace Chimera
 			m_GameWindowFramebuffer->Resize((uint32_t)m_GameWindowSize.x, (uint32_t)m_GameWindowSize.y);
 			activeScene->OnViewportResize((uint32_t)m_GameWindowSize.x, (uint32_t)m_GameWindowSize.y);
 		}
+		Application::Get().SetGameWindowOffset(m_GameWindowBounds[0]);
 
 		m_EditorCamera.OnUpdate(ts);
 
@@ -215,18 +216,22 @@ namespace Chimera
 				ImGui::SetCursorPosY(height / 2.0f - height / 3.0f);
 				if (ImGui::Button("New Project", ImVec2(width / 3, height / 4)))
 				{
-					ImGui::CloseCurrentPopup();
-					m_ShowProjectWindow = false;
-					SetProject();
+					if (SetProject())
+					{
+						ImGui::CloseCurrentPopup();
+						m_ShowProjectWindow = false;
+					}
 				}
 
 				ImGui::Spacing();
 				ImGui::SetCursorPosX(width / 2.0f - width / 6.0f);
 				if (ImGui::Button("Open Project", ImVec2(width / 3, height / 4)))
 				{
-					ImGui::CloseCurrentPopup();
-					m_ShowProjectWindow = false;
-					SetProject();
+					if (SetProject())
+					{
+						ImGui::CloseCurrentPopup();
+						m_ShowProjectWindow = false;
+					}
 				}
 
 				ImGui::PopFont();
@@ -433,22 +438,15 @@ namespace Chimera
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-			// Runtime camera from entity
-			// auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			// const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			// const glm::mat4& cameraProjection = camera.GetProjection();
-			// glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
-
 			//Editor camera
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4& transform = tc.GetGlobalTransform();
-			// glm::mat4& localTransform = tc.GetTransform();
+			glm::mat4& transform = tc.GetTransform();
 			glm::mat4& parentTransform = glm::mat4(1.0f);
 			if(tc.GetParent() != nullptr)
-				parentTransform = tc.GetParent().GetComponent<TransformComponent>().GetGlobalTransform();
+				parentTransform = tc.GetParent().GetComponent<TransformComponent>().GetTransform();
 
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
@@ -463,14 +461,15 @@ namespace Chimera
 
 			if (ImGuizmo::IsUsing())
 			{
-				transform = glm::inverse(parentTransform) * transform;
+				glm::mat4 localTransform = glm::inverse(parentTransform) * transform/*tc.GetLocalTransform()*/;
+				//glm::mat4& localTransform = tc.GetLocalTransform();
 				glm::vec3 position, rotation, scale;
-				Math::DecomposeTransform(transform, position, rotation, scale);
+				Math::DecomposeTransform(localTransform, position, rotation, scale);
 
-				glm::vec3 deltaRotation = rotation - tc.GetRotation();
-				tc.SetPosition(position);
-				tc.SetRotation (tc.GetRotation() + deltaRotation);
-				tc.SetScale(scale);
+				glm::vec3 deltaRotation = rotation - tc.GetLocalRotation();
+				tc.SetLocalPosition(position);
+				tc.SetLocalRotation (tc.GetLocalRotation() + deltaRotation);
+				tc.SetLocalScale(scale);
 			}
 		}
 
@@ -484,19 +483,15 @@ namespace Chimera
 		auto gameWindowMinRegion = ImGui::GetWindowContentRegionMin();
 		auto gameWindowMaxRegion = ImGui::GetWindowContentRegionMax();
 		auto gameWindowOffset = ImGui::GetWindowPos();
-		m_GameWindowBounds[0] = { gameWindowMinRegion.x + gameWindowOffset.x, gameWindowMinRegion.y + gameWindowOffset.y };
-		m_GameWindowBounds[1] = { gameWindowMaxRegion.x + gameWindowOffset.x, gameWindowMaxRegion.y + gameWindowOffset.y };
 
-		/*m_ViewportFocused = ImGui::IsWindowFocused();
-		m_ViewportHovered = ImGui::IsWindowHovered();
-		if (!ImGui::IsAnyItemActive())
-			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
-		else
-			Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);*/
-
+		ImVec2 vp = ImGui::GetMainViewport()->Pos;
+		//CM_CORE_INFO("{0}, {1}", vp.x, vp.y);
 
 		ImVec2 gameWindowPanelSize = ImGui::GetContentRegionAvail();
 		m_GameWindowSize = { gameWindowPanelSize.x,  gameWindowPanelSize.y };
+
+		m_GameWindowBounds[0] = { gameWindowOffset.x - Application::Get().GetWindow().GetX(), Application::Get().GetWindow().GetHeight() -
+			(gameWindowOffset.y - Application::Get().GetWindow().GetY() + ImGui::GetWindowSize().y) };
 
 		uint64_t gameWindowTextureID = m_GameWindowFramebuffer->GetColorAttachmentRendererID();
 		ImGui::Image(reinterpret_cast<void*>(gameWindowTextureID), ImVec2{ m_GameWindowSize.x, m_GameWindowSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -504,7 +499,10 @@ namespace Chimera
 		ImGui::End();
 
 		ImGui::PopStyleVar(ImGuiStyleVar_WindowPadding);
+
 		ImGui::End();
+
+		
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -515,6 +513,7 @@ namespace Chimera
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 		dispatcher.Dispatch<MouseButtonPressedEvent>(CM_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+		dispatcher.Dispatch<WindowFocusEvent>(CM_BIND_EVENT_FN(EditorLayer::OnWindowFocus));
 	}
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{
@@ -569,6 +568,13 @@ namespace Chimera
 		}
 		return false;
 	}
+	bool EditorLayer::OnWindowFocus(WindowFocusEvent& e)
+	{
+		if (e.GetFocus() && !m_ShowProjectWindow)
+			m_AssetManagerPanel.RefreshFiles();
+
+		return false;
+	}
 	void EditorLayer::NewScene()
 	{
 		if (!m_IsPlayMode)
@@ -619,10 +625,12 @@ namespace Chimera
 
 	}
 
-	void EditorLayer::SetProject()
+	bool EditorLayer::SetProject()
 	{
 		std::string filepath = FileDialogs::SelectFolder();
-		if (!filepath.empty())
+		if (filepath.empty())
+			return false;
+		else
 		{
 			ProjectManager::Get().SetProjectPath(filepath);
 			m_SceneHierarchyPanel.SetRootPath(filepath + "\\assets");
@@ -632,9 +640,10 @@ namespace Chimera
 				//ProjectManager::Get().SetProjectPath(filepath);
 				m_AssetManagerPanel.Init();
 				NewScene();
-				return;
+				return true;
 			}
 			OpenProject(filepath);
+			return true;
 		}
 	}
 	void EditorLayer::OpenProject(const std::string& path)

@@ -13,6 +13,8 @@ namespace Chimera
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
+		virtual float GetBoundsWidth() const = 0;
+		virtual float GetBoundsHeight() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
 		virtual void SetFilepath(const std::string& path) = 0;
 		virtual std::string GetFilepath() const = 0;

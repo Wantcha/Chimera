@@ -38,9 +38,9 @@ namespace Chimera
 	{
 		m_ss.SerializeEntityWrap(filepath, entity);
 	}
-	void SceneManager::DeserializeEntity(const std::string& filepath)
+	Entity SceneManager::DeserializeEntity(const std::string& filepath)
 	{
-		m_ss.DeserializeEntityWrap(filepath);
+		return m_ss.DeserializeEntityWrap(AssetManager::GetGameDirectory() + "\\assets" + filepath);
 	}
 	void SceneManager::DeserializeSceneList()
 	{

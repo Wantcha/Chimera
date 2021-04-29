@@ -138,6 +138,9 @@
     <ClInclude Include="src\Chimera\Events\MouseEvent.h">
       <Filter>src\Chimera\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chimera\ImGui\FontAwesome.h">
+      <Filter>src\Chimera\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chimera\ImGui\ImGuiLayer.h">
       <Filter>src\Chimera\ImGui</Filter>
     </ClInclude>
@@ -1497,7 +1500,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chimera\ImGui\FontAwesome.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Chimera\Assets\AssetManager.cpp">

@@ -44,23 +44,55 @@ namespace Chimera
 		TransformComponent(const glm::vec3& position)
 			: m_Position(position) {}
 
-		void SetPosition(glm::vec3 pos) { m_Position = pos; RecalcLocalTransform(); /*CM_CORE_ERROR("LOL");*/ }
-		void SetRotation(glm::vec3 rot) { m_Rotation = rot; RecalcLocalTransform(); }
-		void SetScale(glm::vec3 scale) { m_Scale = scale; RecalcLocalTransform(); }
+		void SetPosition(glm::vec3 pos) { m_Position = pos; RecalcTransform();  }
+		void SetRotation(glm::vec3 rot) { m_Rotation = rot; RecalcTransform(); }
+		void SetScale(glm::vec3 scale) { m_Scale = scale; RecalcTransform(); }
+		void SetLocalPosition(glm::vec3 pos) { m_LocalPosition = pos; RecalcLocalTransform();}
+		void SetLocalRotation(glm::vec3 rot) { m_LocalRotation = rot; RecalcLocalTransform(); }
+		void SetLocalScale(glm::vec3 scale) { m_LocalScale = scale; RecalcLocalTransform(); }
 
-		glm::vec3& GetPosition() { return m_Position; }
-		glm::vec3& GetRotation() { return m_Rotation; }
-		glm::vec3& GetScale() { return m_Scale; }
+		glm::vec3 GetPosition() const { return m_Position; }
+		glm::vec3 GetRotation() const { return m_Rotation; }
+		glm::vec3 GetScale() const { return m_Scale; }
+		glm::vec3 GetLocalPosition() const { return m_LocalPosition; }
+		glm::vec3 GetLocalRotation() const { return m_LocalRotation; }
+		glm::vec3 GetLocalScale() const { return m_LocalScale; }
 
-		glm::mat4 GetTransform() const
+		glm::mat4 GetLocalTransform() const
 		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(m_Rotation));
+			return m_LocalTransform;
+			//glm::mat4 rotation = glm::toMat4(glm::quat(m_Rotation));
 
-			return glm::translate(glm::mat4(1.0f), m_Position) * rotation * glm::scale(glm::mat4(1.0f), m_Scale);
+			//return glm::translate(glm::mat4(1.0f), m_Position) * rotation * glm::scale(glm::mat4(1.0f), m_Scale);
 		}
-		glm::mat4 GetGlobalTransform()
+
+		glm::mat4 SetTransform(const glm::mat4& transform) 
 		{
-			return m_Parent == nullptr ? GetTransform() : m_Parent.GetComponent<TransformComponent>().GetGlobalTransform() * GetTransform();
+			m_Transform = transform;
+			Math::DecomposeTransform(transform, m_Position, m_Rotation, m_Scale);
+			RecalcLocalTransform();
+		}
+
+		glm::mat4 SetLocalTransform(const glm::mat4& transform)
+		{
+			m_LocalTransform = transform;
+			Math::DecomposeTransform(transform, m_LocalPosition, m_LocalRotation, m_LocalScale);
+			RecalcTransform();
+		}
+
+		glm::mat4 GetTransform()
+		{
+			return m_Transform;
+		}
+
+		glm::vec3 GetForward()
+		{
+			return glm::normalize(glm::quat(m_Rotation) * glm::vec3(1, 0, 0));
+		}
+
+		void LookAt(const glm::vec3& target, const glm::vec3& up = glm::vec3(0.f, 1.f, 0.f))
+		{
+			SetTransform(glm::lookAt(m_Position, target, up));
 		}
 
 		void SetParent(Entity newParent)
@@ -84,13 +116,14 @@ namespace Chimera
 
 				glm::mat4 oldGlobal = glm::mat4(1.0f);
 				if(m_Parent != nullptr)
-					oldGlobal = m_Parent.GetComponent<TransformComponent>().GetGlobalTransform();
+					oldGlobal = m_Parent.GetComponent<TransformComponent>().GetTransform();
 				m_Parent = newParent;
 
 				// Maintain consistent transform between reparenting operations
-				glm::mat4 newTransform = glm::inverse(newParent.GetComponent<TransformComponent>().GetGlobalTransform()) * oldGlobal * GetTransform();
+				glm::mat4 newTransform = glm::inverse(newParent.GetComponent<TransformComponent>().GetTransform()) * oldGlobal * GetLocalTransform();
 
-				Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);
+				m_LocalTransform = newTransform;
+				Math::DecomposeTransform(newTransform, m_LocalPosition, m_LocalRotation, m_LocalScale);
 
 				m_CurrentEntity.RemoveRootNode();
 				newParent.GetComponent<TransformComponent>().GetChildren().push_back(m_CurrentEntity);
@@ -99,8 +132,9 @@ namespace Chimera
 			{
 				if (m_Parent != nullptr)
 				{
-					glm::mat4 newTransform = m_Parent.GetComponent<TransformComponent>().GetGlobalTransform() * GetTransform();
-					Math::DecomposeTransform(newTransform, m_Position, m_Rotation, m_Scale);
+					glm::mat4 newTransform = m_Parent.GetComponent<TransformComponent>().GetTransform() * GetLocalTransform();
+					m_LocalTransform = newTransform;
+					Math::DecomposeTransform(newTransform, m_LocalPosition, m_LocalRotation, m_LocalScale);
 
 					m_Parent = nullptr;
 					m_CurrentEntity.MakeRootNode();
@@ -140,14 +174,47 @@ namespace Chimera
 
 		void RecalcLocalTransform()
 		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(m_LocalRotation));
+
+			m_LocalTransform = glm::translate(glm::mat4(1.0f), m_LocalPosition) * rotation * glm::scale(glm::mat4(1.0f), m_LocalScale);
+
+			m_Transform = m_Parent == nullptr ? GetLocalTransform() : m_Parent.GetComponent<TransformComponent>().GetTransform() * GetLocalTransform();
+			Math::DecomposeTransform(m_Transform, m_Position, m_Rotation, m_Scale);
+
+			for (Entity child : m_Children)
+			{
+				child.GetComponent<TransformComponent>().RecalcLocalTransform();
+			}
+		}
+
+		void RecalcTransform()
+		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(m_Rotation));
 
 			m_Transform = glm::translate(glm::mat4(1.0f), m_Position) * rotation * glm::scale(glm::mat4(1.0f), m_Scale);
+
+			glm::mat4 oldParent = glm::mat4(1.0f);
+			if (m_Parent != nullptr)
+				oldParent = m_Parent.GetComponent<TransformComponent>().GetTransform();
+
+			m_LocalTransform = glm::inverse(oldParent) * GetTransform();
+			Math::DecomposeTransform(m_LocalTransform, m_LocalPosition, m_LocalRotation, m_LocalScale);
+
+			for (Entity child : m_Children)
+			{
+				child.GetComponent<TransformComponent>().RecalcTransform();
+			}
 		}
 
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 m_Rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 m_Scale = { 1.0f, 1.0f, 1.0f };
+
+		glm::vec3 m_LocalPosition = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_LocalRotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_LocalScale = { 1.0f, 1.0f, 1.0f };
+
+		glm::mat4 m_LocalTransform = glm::mat4(1.0f);
 		glm::mat4 m_Transform = glm::mat4(1.0f);
 
 		Entity m_CurrentEntity;
@@ -202,38 +269,11 @@ namespace Chimera
 		void SetOrthoNearClip(float nearClip) { Camera.SetOrthoNearClip(nearClip); }
 		void SetOrthoFarClip(float farClip) { Camera.SetOrthoFarClip(farClip); }
 
+		uint32_t GetWidth() const { return Camera.GetWidth(); }
+		uint32_t GetHeight() const { return Camera.GetHeight(); }
+
+		glm::vec3 ScreenToWorld(const glm::vec2& mousePosition, const glm::mat4& camTransform) { return Camera.ScreenToWorld(mousePosition, camTransform); }
 	};
-
-	/*struct BoxCollider2DComponent
-	{
-		BoxCollider2DComponent BoxCollider;
-		//bool EditMode = false;
-
-		BoxCollider2DComponent() = default;
-		BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
-		BoxCollider2DComponent(b2Body* body, float width, float height)
-			: BoxCollider( body, width, height ) {}
-	};*/
-
-	/*struct CircleCollider2DComponent
-	{
-		CircleCollider2DComponent CircleCollider;
-
-		CircleCollider2DComponent() = default;
-		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
-		CircleCollider2DComponent(b2Body* body, float radius)
-			: CircleCollider(body, radius) {}
-	};*/
-
-	/*struct RigidBody2DComponent
-	{
-		RigidBody2DComponent RigidBody;
-
-		RigidBody2DComponent() = default;
-		RigidBody2DComponent(const RigidBody2DComponent&) = default;
-		RigidBody2DComponent(b2Body* body)
-			: RigidBody(body) {}
-	};*/
 
 	struct Body2DComponent
 	{

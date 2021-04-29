@@ -40,7 +40,7 @@ namespace Chimera
 		void DeserializePlayMode();
 
 		void SerializeEntity(const std::string& filepath, Entity entity);
-		void DeserializeEntity(const std::string& filepath);
+		Entity DeserializeEntity(const std::string& filepath);
 
 		void DeserializeSceneList();
 	private:

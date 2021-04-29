@@ -13,15 +13,15 @@ namespace Chimera
 		Entity* entityA = (Entity*)colliderA->GetBody()->GetUserData().pointer;
 		Entity* entityB = (Entity*)colliderB->GetBody()->GetUserData().pointer;
 
-
 		if (entityA->HasComponent<LuaScripts>())
 		{
 			LuaScripts& ls = entityA->GetComponent<LuaScripts>();
+			//CM_CORE_ERROR("CONTACTBEGFIN");
 			for (Ref<LuaScriptComponent> lsc : ls.Scripts)
 			{
 				if (lsc->GetSolEnvironment() != nullptr)
 				{
-					if (contact->GetFixtureA()->IsSensor())
+					if (contact->GetFixtureB()->IsSensor())
 					{
 						lsc->OnSensorEnter2D(colliderB);
 					}
@@ -56,7 +56,7 @@ namespace Chimera
 			{
 				if (lsc->GetSolEnvironment() != nullptr)
 				{
-					if (contact->GetFixtureB()->IsSensor())
+					if (contact->GetFixtureA()->IsSensor())
 					{
 						lsc->OnSensorEnter2D(colliderA);
 					}

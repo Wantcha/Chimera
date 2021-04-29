@@ -132,9 +132,9 @@ namespace Chimera
 			out << YAML::BeginMap;
 
 			auto& tc = entity.GetComponent<TransformComponent>();
-			glm::mat4 globalTransform = tc.GetGlobalTransform();
+			glm::mat4 globalTransform = tc.GetTransform();
 			glm::vec3 pos, rot, scale;
-			Math::DecomposeTransform(tc.GetGlobalTransform(), pos, rot, scale);
+			Math::DecomposeTransform(tc.GetTransform(), pos, rot, scale);
 			out << YAML::Key << "Position" << YAML::Value << pos;
 			out << YAML::Key << "Rotation" << YAML::Value << rot;
 			out << YAML::Key << "Scale" << YAML::Value << scale;
@@ -346,14 +346,16 @@ namespace Chimera
 		return true;
 	}
 
-	bool SceneSerializer::DeserializeEntityWrap(const std::string& filepath)
+	Entity SceneSerializer::DeserializeEntityWrap(const std::string& filepath)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		return DeserializeEntities(data);
+		DeserializeEntities(data);
+
+		return FindHierarchyRoot(data);
 	}
 
 	bool SceneSerializer::Deserialize(const std::string& buffer)
@@ -363,7 +365,7 @@ namespace Chimera
 			return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		CM_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+		//CM_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
 		DeserializeEntities(data);
 		
@@ -371,7 +373,7 @@ namespace Chimera
 	}
 	bool SceneSerializer::DeserializeEntities(YAML::Node& data)
 	{
-		std::unordered_map<uint32_t, uint32_t> adjustedEntityID;
+		m_AdjustedEntityID.clear();
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -389,12 +391,12 @@ namespace Chimera
 				}
 
 				Entity deserializedEntity = m_Scene->CreateEntityWithID(uuid, name);
-				CM_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", (uint32_t)deserializedEntity, name);
+				//CM_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", (uint32_t)deserializedEntity, name);
 
 				if ((uint32_t)deserializedEntity != uuid)
 				{
-					adjustedEntityID[uuid] = (uint32_t)deserializedEntity;
-					CM_CORE_ERROR("Adjusted from {0} to {1}", uuid, (uint32_t)deserializedEntity );
+					m_AdjustedEntityID[uuid] = (uint32_t)deserializedEntity;
+					//CM_CORE_ERROR("Adjusted from {0} to {1}", uuid, (uint32_t)deserializedEntity );
 				}
 
 				deserializedEntity.GetComponent<TagComponent>().Enabled = enabled;
@@ -406,7 +408,6 @@ namespace Chimera
 					tc.SetPosition(transformComponent["Position"].as<glm::vec3>());
 					tc.SetRotation(transformComponent["Rotation"].as<glm::vec3>());
 					tc.SetScale(transformComponent["Scale"].as<glm::vec3>());
-					//tc.SetParent(Entity{ (entt::entity)transformComponent["Parent"].as<uint32_t>(), m_Scene.get() });
 				}
 
 				auto cameraComponent = entity["CameraComponent"];
@@ -459,6 +460,7 @@ namespace Chimera
 					box.SetDensity(boxCollider2DComponent["Density"].as<float>());
 					box.SetFriction(boxCollider2DComponent["Friction"].as<float>());
 					box.SetBounciness(boxCollider2DComponent["Bounciness"].as<float>());
+					box.SetSensor(boxCollider2DComponent["Sensor"].as<bool>());
 				}
 
 				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
@@ -471,6 +473,7 @@ namespace Chimera
 					cc.SetDensity(circleCollider2DComponent["Density"].as<float>());
 					cc.SetFriction(circleCollider2DComponent["Friction"].as<float>());
 					cc.SetBounciness(circleCollider2DComponent["Bounciness"].as<float>());
+					cc.SetSensor(circleCollider2DComponent["Sensor"].as<bool>());
 				}
 
 				auto scripts = entity["LuaScripts"];
@@ -495,10 +498,9 @@ namespace Chimera
 			for (auto entity : entities)
 			{
 				uint32_t uuid = entity["Entity"].as<uint32_t>();
-				if (adjustedEntityID.find(uuid) != adjustedEntityID.end())
+				if (m_AdjustedEntityID.find(uuid) != m_AdjustedEntityID.end())
 				{
-					uuid = adjustedEntityID[uuid];
-					//CM_CORE_ERROR()
+					uuid = m_AdjustedEntityID[uuid];
 				}
 				Entity deserializedEntity = Entity{ (entt::entity)uuid, m_Scene.get() };
 
@@ -510,10 +512,9 @@ namespace Chimera
 					for (auto child : children)
 					{
 						uint32_t childID = child.as<uint32_t>();
-						if (adjustedEntityID.find(childID) != adjustedEntityID.end())
+						if (m_AdjustedEntityID.find(childID) != m_AdjustedEntityID.end())
 						{
-							childID = adjustedEntityID[childID];
-							//CM_CORE_ERROR()
+							childID = m_AdjustedEntityID[childID];
 						}
 
 						Entity e = Entity{ (entt::entity)childID, m_Scene.get() };
@@ -530,11 +531,38 @@ namespace Chimera
 			for (auto root : roots)
 			{
 				entt::entity handle = (entt::entity)root.as<uint32_t>();
-				Entity entity = Entity{ handle, m_Scene.get() };
+				//uint32_t handle = root.as<uint32_t>();
+				/*if ( m_AdjustedEntityID.find(handle) != m_AdjustedEntityID.end() )
+				{
+					handle = m_AdjustedEntityID[handle];
+				}*/
+				Entity entity = Entity{ (entt::entity)handle, m_Scene.get() };
 				newOrder.push_back(entity);
 			}
 			m_Scene->m_RootEntityList = newOrder;
 		}
 		return false;
+	}
+	Entity SceneSerializer::FindHierarchyRoot(YAML::Node& data)
+	{
+		auto entities = data["Entities"];
+		if (entities)
+		{
+			for (auto entity : entities)
+			{
+				auto transformComponent = entity["TransformComponent"];
+				if (transformComponent && transformComponent["Parent"].as<uint32_t>() == entt::null)
+				{
+					uint32_t uuid = entity["Entity"].as<uint32_t>();
+					if (m_AdjustedEntityID.find(uuid) != m_AdjustedEntityID.end())
+					{
+						uuid = m_AdjustedEntityID[uuid];
+					}
+					return Entity( (entt::entity) uuid, m_Scene.get());
+				}
+			}
+		}
+
+		return Entity(entt::null, m_Scene.get());
 	}
 }

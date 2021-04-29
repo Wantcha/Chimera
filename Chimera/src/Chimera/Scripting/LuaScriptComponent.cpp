@@ -27,13 +27,16 @@ namespace Chimera
 	}
 	void LuaScriptComponent::Initialize()
 	{
-		auto lastSlash = m_FilePath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = m_FilePath.rfind('.');
-		auto count = lastDot == std::string::npos ? m_FilePath.size() - lastSlash : lastDot - lastSlash;
-		m_Name = m_FilePath.substr(lastSlash, count);
+		if (!m_FilePath.empty())
+		{
+			auto lastSlash = m_FilePath.find_last_of("/\\");
+			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+			auto lastDot = m_FilePath.rfind('.');
+			auto count = lastDot == std::string::npos ? m_FilePath.size() - lastSlash : lastDot - lastSlash;
+			m_Name = m_FilePath.substr(lastSlash, count);
 
-		LoadScript(AssetManager::GetGameDirectory() + "\\assets" + m_FilePath);
+			LoadScript(AssetManager::GetGameDirectory() + "\\assets" + m_FilePath);
+		}
 	}
 	void LuaScriptComponent::OnInit()
 	{

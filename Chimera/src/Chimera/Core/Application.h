@@ -12,6 +12,7 @@
 #include "Chimera/Renderer/Buffer.h"
 #include "Chimera/Renderer/VertexArray.h"
 #include "Chimera/Renderer/OrthographicCamera.h"
+#include "Chimera/Renderer/Framebuffer.h"
 
 #include "Chimera/Core/Timestep.h"
 
@@ -33,6 +34,9 @@ namespace Chimera {
 
 		inline Window& GetWindow() { return *m_Window; }
 
+		inline void SetGameWindowOffset(const glm::vec2& offset) { m_GameWindowOffset = offset; }
+		glm::vec2 GetGameWindowOffset() { return m_GameWindowOffset; }
+
 		void Close();
 
 		//void InitializeGame();
@@ -45,6 +49,9 @@ namespace Chimera {
 		bool OnKeyReleased(KeyReleasedEvent& e);
 
 		std::unique_ptr<Window> m_Window;
+
+		glm::vec2 m_GameWindowOffset{0, 0};
+
 		ImGuiLayer* m_ImGuiLayer; 
 		bool m_Running = true;
 		bool m_Minimized = false;

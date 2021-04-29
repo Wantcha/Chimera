@@ -31,8 +31,13 @@ namespace Chimera
 		void SetOrthoNearClip(float nearClip) { m_OrthographicNear = nearClip; RecalculateProjection(); }
 		void SetOrthoFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
 
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
+
 		ProjectionType GetProjectionType() const { return m_ProjectionType; }
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection(); }
+
+		glm::vec3 ScreenToWorld(const glm::vec2& mousePosition, const glm::mat4& camTransform);
 	private:
 		void RecalculateProjection();
 
@@ -45,6 +50,10 @@ namespace Chimera
 		float m_FOV = glm::radians(45.0f);
 		float m_PerspectiveNear = 0.01f;
 		float m_PerspectiveFar = 10000.0f;
+
+		uint32_t m_Width, m_Height;
+
+		//glm::mat4 m_Transform;
 
 		float m_AspectRatio = 1.7778f;
 	};

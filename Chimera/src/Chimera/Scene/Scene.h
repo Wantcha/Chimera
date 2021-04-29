@@ -47,6 +47,7 @@ namespace Chimera
 		entt::registry m_Registry;
 		std::vector<Entity> m_RootEntityList;
 
+		//Entity m_EntityToBeDeleted = Entity{};
 		Scope<b2World> m_World;
 		std::stack<b2Body*> m_DestructionStack;
 		//std::stack<b2Fixture*>

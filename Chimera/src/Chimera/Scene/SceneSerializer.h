@@ -17,12 +17,14 @@ namespace Chimera
 
 		bool DeserializeFromFile(const std::string& filepath);
 		bool DeserializeFromMemory(const std::string& buffer);
-		bool DeserializeEntityWrap(const std::string& filepath);
+		Entity DeserializeEntityWrap(const std::string& filepath);
 	private:
 		std::string Serialize();
 		bool Deserialize(const std::string& buffer);
 		bool DeserializeEntities(YAML::Node& node);
+		Entity FindHierarchyRoot(YAML::Node& node);
 
 		Ref<Scene> m_Scene;
+		std::unordered_map<uint32_t, uint32_t> m_AdjustedEntityID;
 	};
 }

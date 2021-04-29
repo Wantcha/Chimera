@@ -44,13 +44,4 @@ namespace Chimera
 	{
 		return Box2DToBodyType(m_Body->GetType());
 	}
-
-	/*void RigidBody2DComponent::UpdateBody(b2Body*& body)
-	{
-		b2BodyDef bodyDef;
-		bodyDef.type = GetBodyType(m_BodyType);
-		bodyDef.fixedRotation = m_FixedRotation;
-		bodyDef.gravityScale = m_GravityScale;
-		bodyDef.bullet = !m_DiscreteCollision;
-	}*/
 }

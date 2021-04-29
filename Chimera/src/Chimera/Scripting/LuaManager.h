@@ -2,6 +2,7 @@
 #include <sol/sol.hpp>
 #include "Chimera/Core/Timestep.h"
 #include "Chimera/Scene/Entity.h"
+#include <queue>
 
 namespace Chimera
 {
@@ -59,11 +60,12 @@ namespace Chimera
 		}
 		Entity GetEntityByName(const std::string& name);
 		Entity CreateEmptyEntity(const std::string& name);
+		Entity SpawnWrap(const std::string& path);
+		void Destroy(Entity e);
 	private:
-		
-
 		sol::state m_State;
 		Scene* m_CurrentScene = nullptr;
 		static LuaManager* s_Instance;
+		//std::queue<std::string> m_EntitiesToSpawn;
 	};
 }

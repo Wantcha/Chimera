@@ -12,8 +12,10 @@ namespace Chimera
 		OpenGLTexture2D(uint32_t width, uint32_t height);
 		virtual ~OpenGLTexture2D();
 
-		virtual uint32_t GetWidth() const override { return m_Width; };
+		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual float GetBoundsWidth() const override { return m_BoundsWidth; }
+		virtual float GetBoundsHeight() const override { return m_BoundsHeight; }
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
 		virtual std::string GetFilepath() const override { return m_Path; }
@@ -30,6 +32,8 @@ namespace Chimera
 	private:
 		std::string m_Path;
 		uint32_t m_Width, m_Height;
+		uint32_t m_PixelsPerUnit = 100;
+		float m_BoundsWidth, m_BoundsHeight;
 		uint32_t m_RendererID;
 		GLenum m_InternalFormat, m_DataFormat;
 	};

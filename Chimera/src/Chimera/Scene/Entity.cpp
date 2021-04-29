@@ -8,6 +8,11 @@ namespace Chimera
 		: m_EntityHandle(handle), m_Scene(scene)
 	{
 	}
+	/*void Entity::GetLuaScript(int index)
+	{
+		std::vector<Ref<LuaScriptComponent>>& scripts = GetComponent<LuaScripts>().Scripts;
+		return scripts[index]->GetSolEnvironment();
+	}*/
 	std::string Entity::GetName()
 	{
 		return GetComponent<TagComponent>().Name;

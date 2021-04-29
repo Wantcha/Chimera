@@ -72,6 +72,9 @@ namespace Chimera
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
+		int x, y;
+		glfwGetWindowPos(m_Window, &m_Data.X, &m_Data.Y);
+
 		//Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
@@ -157,6 +160,25 @@ namespace Chimera
 				MouseMovedEvent event((float)xPos, (float)yPos);
 				data.EventCallback(event);
 			});
+
+		glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				WindowFocusEvent event(focused);
+				data.EventCallback(event);
+			});
+
+		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int x, int y)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				data.X = x;
+				data.Y = y;
+
+				WindowMoveEvent event(x, y);
+				data.EventCallback(event);
+			}
+		);
 	}
 
 

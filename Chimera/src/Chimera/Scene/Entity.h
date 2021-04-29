@@ -47,7 +47,7 @@ namespace Chimera
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		bool IsValid()
+		/*bool IsValid()
 		{
 			return m_Scene->m_Registry.valid(m_EntityHandle);
 		}
@@ -55,8 +55,8 @@ namespace Chimera
 		void SetNullScene()
 		{
 			m_Scene = nullptr;
-		}
-
+		}*/
+		 
 		std::string GetName();
 		void SetName(std::string name);
 

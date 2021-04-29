@@ -1,5 +1,6 @@
 #include "cmpch.h"
 #include "LuaManager.h"
+#include "Chimera/Core/Application.h"
 #include "Chimera/Scene/Scene.h"
 #include "Chimera/Scene/SceneManager.h"
 #include "Chimera/Scene/Components.h"
@@ -7,6 +8,7 @@
 #include "Chimera/Core/Keycodes.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace Chimera
 {
@@ -26,14 +28,21 @@ namespace Chimera
 	}
 	void LuaManager::InitBindings()
 	{
-		m_State.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::table);
+		m_State.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::table, sol::lib::os);
 
 		auto entity_type = m_State.new_usertype<Entity>("Entity", sol::no_constructor);
 		entity_type["name"] = sol::property( &Entity::GetName, &Entity::SetName );
 		entity_type["enabled"] = sol::property( &Entity::IsEnabled, &Entity::SetEnabled );
+		entity_type["GetLuaScriptComponent"] = [](Entity e, int index) {
+			std::vector<Ref<LuaScriptComponent>>& scripts = e.GetComponent<LuaScripts>().Scripts;
+			return *scripts[index]->GetSolEnvironment();
+			//CM_CORE_ERROR("SALAMA");
+		};
 
 		m_State.set_function("GetEntityByName", &LuaManager::GetEntityByName, this);
 		m_State.set_function("CreateEmptyEntity", &LuaManager::CreateEmptyEntity, this);
+		m_State.set_function("SpawnWrap", &LuaManager::SpawnWrap, this);
+		m_State.set_function("Destroy", &LuaManager::Destroy, this);
 
 		BindMath();
 		BindApp();
@@ -44,7 +53,7 @@ namespace Chimera
 		BindPhysics();
 	}
 	
-	void LuaManager::InitScripts()
+	/*void LuaManager::InitScripts()
 	{
 		auto& registry = m_CurrentScene->m_Registry;
 
@@ -62,28 +71,34 @@ namespace Chimera
 			}
 
 		});
-	}
+	}*/
 	void LuaManager::UpdateScripts(Timestep ts)
 	{
 		auto& registry = m_CurrentScene->m_Registry;
 
-		//auto view = registry.view<LuaScripts>();
+		auto view = registry.view<LuaScripts>();
 
-		registry.view<LuaScripts>().each([=](auto entity, auto& ls)
+		view.each([&](auto entity, auto& ls)
 			{
-				for (Ref<LuaScriptComponent> lsc : ls.Scripts)
+				std::vector<Ref<LuaScriptComponent>> scripts = ls.Scripts;
+				for (Ref<LuaScriptComponent> lsc : scripts)
 				{
 					if (lsc->m_Env)
 					{
 						if (!lsc->m_HasBeenInitialized)
 						{
-							lsc->m_HasBeenInitialized = true;
 							lsc->m_Entity = Entity{ entity, m_CurrentScene };
 							(*(lsc->m_Env))["entity"] = lsc->m_Entity;
-							lsc->OnInit();
+							if (lsc->m_Entity.IsEnabled())
+							{
+								lsc->OnInit();
+								lsc->m_HasBeenInitialized = true;
+							}
+								
 						}
-
-						lsc->OnUpdate(ts);
+						//CM_CORE_ERROR(lsc->m_Entity.GetName());
+						if(lsc->m_Entity.IsEnabled())
+							lsc->OnUpdate(ts);
 					}
 				}
 			});
@@ -98,9 +113,10 @@ namespace Chimera
 			{
 				for (Ref<LuaScriptComponent> lsc : ls.Scripts)
 				{
-					if (lsc->m_Env)
+					if (lsc->m_HasBeenInitialized)
 					{
-						lsc->OnFixedUpdate(fixedts);
+						if (lsc->m_Entity.IsEnabled())
+							lsc->OnFixedUpdate(fixedts);
 					}
 				}
 			});
@@ -123,7 +139,8 @@ namespace Chimera
 			"y", &glm::vec2::y,
 			sol::meta_function::addition, [](const glm::vec2& l, const glm::vec2& r) { return glm::vec2(l.x + r.x, l.y + r.y); },
 			sol::meta_function::subtraction, [](const glm::vec2& l, const glm::vec2& r) { return glm::vec2(l.x - r.x, l.y - r.y); },
-			sol::meta_function::multiplication, [](const glm::vec2& l, const float r) { return glm::vec2(l.x * r, l.y * r); }
+			sol::meta_function::multiplication, [](const glm::vec2& l, const float r) { return glm::vec2(l.x * r, l.y * r); },
+			"GetLength", [](const glm::vec2& v) -> float { return glm::length(v); }
 			);
 
 		m_State.new_usertype<glm::vec3>("Vector3", sol::constructors<glm::vec3(float, float, float)>(),
@@ -132,8 +149,60 @@ namespace Chimera
 			"z", &glm::vec3::z,
 			sol::meta_function::addition, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x + r.x, l.y + r.y, l.z + r.z); },
 			sol::meta_function::subtraction, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x - r.x, l.y - r.y, l.z - r.z); },
-			sol::meta_function::multiplication, [](const glm::vec3& l, const float r) { return glm::vec3(l.x * r, l.y * r, l.z * r); }
+			sol::meta_function::multiplication, [](const glm::vec3& l, const float r) { return glm::vec3(l.x * r, l.y * r, l.z * r); },
+			"GetLength", [](const glm::vec3& v) -> float { return glm::length(v); }
 		);
+
+		m_State.new_usertype<glm::quat>("Quaternion", sol::constructors<glm::quat(float, float, float, float)>(),
+			"x", &glm::quat::x,
+			"y", &glm::quat::y,
+			"z", &glm::quat::z,
+			"w", &glm::quat::w,
+			"ToEuler", [](glm::quat& q) -> glm::vec3 { return glm::eulerAngles(q); }//,
+			//sol::meta_function::addition, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x + r.x, l.y + r.y, l.z + r.z); },
+			//sol::meta_function::subtraction, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x - r.x, l.y - r.y, l.z - r.z); },
+			//sol::meta_function::multiplication, [](const glm::vec3& l, const float r) { return glm::vec3(l.x * r, l.y * r, l.z * r); }
+		);
+
+		m_State.new_usertype<glm::mat4>("Matrix4", sol::no_constructor
+			//,
+			//sol::meta_function::addition, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x + r.x, l.y + r.y, l.z + r.z); },
+			//sol::meta_function::subtraction, [](const glm::vec3& l, const glm::vec3& r) { return glm::vec3(l.x - r.x, l.y - r.y, l.z - r.z); },
+			//sol::meta_function::multiplication, [](const glm::vec3& l, const float r) { return glm::vec3(l.x * r, l.y * r, l.z * r); }
+		);
+
+		auto vec3 = m_State.create_table("Vec3");
+		vec3.set_function("RotateTowards", [](sol::this_state s, const glm::vec3& forwardDirection, const glm::vec3& target) -> glm::vec3
+			{
+				glm::vec3 pos = glm::normalize(forwardDirection);
+				glm::vec3 targetVec = glm::normalize(target);
+
+				/*if (pos == targetVec || pos == - targetVec)
+				{
+					return glm::eulerAngles( glm::quat(glm::mat4(1.0f)) );
+				}*/
+				float dotProduct = glm::dot(pos, targetVec);
+				if (dotProduct > 1)
+					dotProduct = 1;
+				else if (dotProduct < -1)
+					dotProduct = -1;
+				float rotationAngle = (float)glm::acos(dotProduct);
+				glm::vec3 rotAxis = glm::normalize(glm::cross(pos, targetVec));
+
+				glm::quat rotQuat = glm::rotate(glm::mat4(1.0f), rotationAngle, rotAxis);
+				//CM_CORE_WARN(glm::degrees(rotationAngle));
+				//CM_CORE_ERROR(glm::degrees( glm::eulerAngles(rotQuat)).z);
+				if (std::isnan(glm::degrees(glm::eulerAngles(rotQuat)).z))
+				{
+					return glm::eulerAngles(glm::quat(glm::mat4(1.0f)));
+				}
+					
+				return glm::eulerAngles(rotQuat);
+			});
+		vec3.set_function("Distance", [](sol::this_state s, const glm::vec3& position, const glm::vec3& target) -> float
+			{
+				return glm::distance(position, target);
+			});
 	}
 	Entity LuaManager::GetEntityByName(const std::string& name)
 	{
@@ -154,6 +223,16 @@ namespace Chimera
 	{
 		return m_CurrentScene->CreateEntity(name);
 	}
+	Entity LuaManager::SpawnWrap(const std::string& path)
+	{
+		//CM_CORE_WARN("Trying to spawn wrap: " + path);
+		return SceneManager::Get().DeserializeEntity(path);
+		//return Entity();
+	}
+	void LuaManager::Destroy(Entity e)
+	{
+		m_CurrentScene->DestroyEntity(e);
+	}
 	void LuaManager::BindECS()
 	{
 		auto entity_type = m_State["Entity"].get_or_create<sol::usertype<Entity>>();
@@ -165,15 +244,31 @@ namespace Chimera
 			"position", sol::property( &TransformComponent::GetPosition, &TransformComponent::SetPosition),
 			"rotation", sol::property(&TransformComponent::GetRotation, &TransformComponent::SetRotation),
 			"scale", sol::property(&TransformComponent::GetScale, &TransformComponent::SetScale),
+			"localPosition", sol::property(&TransformComponent::GetLocalPosition, &TransformComponent::SetLocalPosition),
+			"localRotation", sol::property(&TransformComponent::GetLocalRotation, &TransformComponent::SetLocalRotation),
+			"localScale", sol::property(&TransformComponent::GetLocalScale, &TransformComponent::SetLocalScale),
 			"SetParent", &TransformComponent::SetParent,
 			//"GetEntity", &TransformComponent::GetEntity,
 			"GetParent", &TransformComponent::GetParent,
-			"GetChildren", &TransformComponent::GetChildren);
+			"GetChildren", &TransformComponent::GetChildren,
+			"GetForward", &TransformComponent::GetForward,
+			"GetTransform", &TransformComponent::GetTransform,
+			"GetLocalTransform", &TransformComponent::GetLocalTransform/*,
+			"LookAt", &TransformComponent::LookAt*/);
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, TransformComponent);
 
+		m_State.new_usertype<Texture2D>("Texture2D", sol::no_constructor,
+			"Create", [](const std::string& path) -> Ref<Texture2D> { return Texture2D::Create(path); },
+			"GetBoundsWidth", &Texture2D::GetBoundsWidth,
+			"GetBoundsHeight", &Texture2D::GetBoundsHeight,
+			"GetWidth", &Texture2D::GetWidth,
+			"GetHeight", &Texture2D::GetHeight
+			);
+
 		auto spriteRendererComponent_type = m_State.new_usertype<SpriteRendererComponent>("SpriteRendererComponent", sol::no_constructor,
-			"color", &SpriteRendererComponent::Color);
+			"color", &SpriteRendererComponent::Color,
+			"texture", &SpriteRendererComponent::SpriteTexture);
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, SpriteRendererComponent);
 
@@ -182,18 +277,15 @@ namespace Chimera
 			"fixedAspectRatio", &CameraComponent::FixedAspectRatio,
 			"SetOrthographic", &CameraComponent::SetOrthographic,
 			"SetPerspective", &CameraComponent::SetPerspective,
-			"GetFOV", &CameraComponent::GetFOV,
-			"SetFOV", &CameraComponent::SetFOV,
-			"GetOrthoSize", &CameraComponent::GetOrthographicSize,
-			"SetOrthoSize", &CameraComponent::SetOrthographicSize,
-			"GetPerspNear", &CameraComponent::GetPerspNearClip,
-			"SetPerspNear", & CameraComponent::SetPerspNearClip,
-			"GetPerspFar", &CameraComponent::GetPerspFarClip,
-			"SetPerspFar", &CameraComponent::SetPerspFarClip,
-			"GetOrthoNear", &CameraComponent::GetOrthoNearClip,
-			"SetOrthoNear", &CameraComponent::SetOrthoNearClip,
-			"GetOrthoFar", &CameraComponent::GetOrthoFarClip,
-			"SetOrthoFar", &CameraComponent::SetOrthoFarClip);
+			"fov", sol::property( &CameraComponent::GetFOV, &CameraComponent::SetFOV),
+			"orthoSize", sol::property(&CameraComponent::GetOrthographicSize, &CameraComponent::SetOrthographicSize),
+			"perspectiveNear", sol::property(&CameraComponent::GetPerspNearClip, &CameraComponent::SetPerspNearClip),
+			"perspectiveFar", sol::property(&CameraComponent::GetPerspFarClip, &CameraComponent::GetPerspFarClip),
+			"orthoNear", sol::property(&CameraComponent::GetOrthoNearClip, &CameraComponent::SetOrthoNearClip),
+			"orthoFar", sol::property(&CameraComponent::GetOrthoFarClip, &CameraComponent::SetOrthoFarClip),
+			"GetWidth", &CameraComponent::GetWidth,
+			"GetHeight", &CameraComponent::GetHeight,
+			"ScreenToWorld", &CameraComponent::ScreenToWorld);
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, CameraComponent);
 
@@ -237,33 +329,13 @@ namespace Chimera
 			"friction", sol::property(&CircleCollider2DComponent::GetFriction, &CircleCollider2DComponent::SetFriction),
 			"density", sol::property(&CircleCollider2DComponent::GetDensity, &CircleCollider2DComponent::SetDensity),
 			"bounciness", sol::property(&CircleCollider2DComponent::GetBounciness, &CircleCollider2DComponent::SetBounciness),
-			"SetRadius", &CircleCollider2DComponent::SetRadius,
-			"GetRadius", &CircleCollider2DComponent::GetRadius,
+			"radius", sol::property(&CircleCollider2DComponent::GetRadius, &CircleCollider2DComponent::SetRadius),
 			"SetCenter", sol::overload(static_cast<void(CircleCollider2DComponent::*)(glm::vec2)>(&CircleCollider2DComponent::SetCenter),
 										static_cast<void(CircleCollider2DComponent::*)(float, float)>(&CircleCollider2DComponent::SetCenter)),
 			"GetCenter", &CircleCollider2DComponent::GetCenter
 			);
 
 		REGISTER_COMPONENT_WITH_ECS(m_State, CircleCollider2DComponent);
-
-		auto luaScript_type = m_State.new_usertype<LuaScriptComponent>("LuaScriptComponent", sol::no_constructor,
-			"path", sol::property(&LuaScriptComponent::GetFilePath, &LuaScriptComponent::SetFilePath)
-			);
-
-		/*entity_type.set_function("AddLuaScriptComponent", [&]() {
-				if (entity_type.HasComponent<LuaScripts>())
-				{
-					entity_type.GetComponent<LuaScripts>().Scripts.push_back(CreateRef<LuaScriptComponent>());
-				}
-
-				else
-				{
-					LuaScripts& ls = m_SelectionContext.AddComponent<LuaScripts>();
-					ls.Scripts.push_back(CreateRef<LuaScriptComponent>());
-				}
-			});
-		entity_type.set_function("Remove", &Entity::RemoveComponent<component>);
-		entity_type.set_function("Get", &Entity::GetComponent<LuaScripts>);*/
 	}
 	void LuaManager::BindInput()
 	{
@@ -284,7 +356,9 @@ namespace Chimera
 			});
 		input.set_function("GetMousePosition", []() -> std::pair<float, float>
 			{
-				return Input::GetMousePosition();
+				std::pair<float, float> mPos = Input::GetMousePosition();
+				glm::vec2 gameWindowOffset = Application::Get().GetGameWindowOffset();
+				return { std::get<0>(mPos) - gameWindowOffset.x, Application::Get().GetWindow().GetHeight() - std::get<1>(mPos) - gameWindowOffset.y };
 			});
 
 		std::initializer_list<std::pair<sol::string_view, KeyCode>> keyItems =
@@ -390,13 +464,18 @@ namespace Chimera
 		//static const std::string sceneManagerKey = "SceneManager::Get()";
 		SceneManager& manager = SceneManager::Get();
 
-		m_State.new_usertype<SceneManager>("SceneManager", sol::no_constructor,
-			"LoadScene", &SceneManager::LoadScene);
+		auto sm = m_State.create_table("SceneManager");
+		sm.set_function("LoadScene", [&](sol::this_state s, int index) { manager.LoadScene(index); });
+		/*m_State.new_usertype<SceneManager>("SceneManager", sol::no_constructor,
+			"LoadScene", &SceneManager::LoadScene);*/
 
-		m_State.set("sceneManager", &manager);
+		//m_State.set("sceneManager", &manager);
 	}
 	void LuaManager::BindApp()
 	{
+		auto window = m_State["Window"].get_or_create<sol::table>();
+		window.set_function("GetWidth", [](sol::this_state s) -> uint32_t { return Application::Get().GetWindow().GetWidth(); });
+		window.set_function("GetHeight", [](sol::this_state s) -> uint32_t { return Application::Get().GetWindow().GetHeight(); });
 	}
 	void LuaManager::BindLog()
 	{

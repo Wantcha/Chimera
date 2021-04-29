@@ -111,19 +111,22 @@ namespace Chimera {
 				timeIncrement = 0.0f;
 			}
 
-			if (!m_Minimized)
-			{
-				CM_PROFILE_SCOPE("LayerStack OnUpdate");
-				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(timestep);
-			}
+			// Fixed Update
 			fixedUpdateTime += timestep;
-			if(fixedUpdateTime > m_FixedTimeStep)
+			if (!m_Minimized && fixedUpdateTime > m_FixedTimeStep)
 			{
 				CM_PROFILE_SCOPE("LayerStack OnFixedUpdate");
 				for (Layer* layer : m_LayerStack)
 					layer->OnFixedUpdate(m_FixedTimeStep);
 				fixedUpdateTime -= m_FixedTimeStep;
+			}
+
+			// Update
+			if (!m_Minimized)
+			{
+				CM_PROFILE_SCOPE("LayerStack OnUpdate");
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(timestep);
 			}
 
 #ifdef EDITOR

@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CM_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;..\Chimera\vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CM_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;..\Chimera\vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -118,7 +118,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>CM_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Chimera\vendor\spdlog\include;..\Chimera\src;..\Chimera\vendor;..\Chimera\vendor\glm;..\Chimera\vendor\entt\include;..\Chimera\vendor\box2d\include;..\Chimera\vendor\Lua\src;..\Chimera\vendor\sol2\include;..\Chimera\vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>

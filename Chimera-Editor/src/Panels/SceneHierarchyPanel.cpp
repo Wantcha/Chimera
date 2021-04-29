@@ -441,6 +441,12 @@ namespace Chimera
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
+		if (!m_Context->m_Registry.valid(entity))
+		{
+			m_SelectionContext = {};
+			return;
+		}	
+
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& name = entity.GetComponent<TagComponent>().Name;
@@ -534,17 +540,17 @@ namespace Chimera
 
 			if (open)
 			{
-				glm::vec3 rotation = glm::degrees(component.GetRotation());
-				glm::vec3 position = component.GetPosition();
-				glm::vec3 scale = component.GetScale();
+				glm::vec3 rotation = glm::degrees(component.GetLocalRotation());
+				glm::vec3 position = component.GetLocalPosition();
+				glm::vec3 scale = component.GetLocalScale();
 				DrawVec3Control("Position", position);
-				component.SetPosition(position);
+				component.SetLocalPosition(position);
 
 				DrawVec3Control("Rotation", rotation);
-				component.SetRotation(glm::radians(rotation));
+				component.SetLocalRotation(glm::radians(rotation));
 
 				DrawVec3Control("Scale", scale, 1.0f);
-				component.SetScale(scale);
+				component.SetLocalScale(scale);
 
 				ImGui::TreePop();
 			}

@@ -22,7 +22,8 @@ project "Sandbox"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.box2d}",
 		"%{IncludeDir.Lua}",
-		"%{IncludeDir.sol2}"
+		"%{IncludeDir.sol2}",
+		"%{IncludeDir.yaml_cpp}"
 	}
 
 	links

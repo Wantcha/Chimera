@@ -11,10 +11,7 @@ namespace Chimera
 	{
 	public:
 		Collider2D() = default;
-		/*Collider2D(const Collider2D&& other) noexcept
-		{
-			CM_CORE_ERROR("Moving Collider2D");
-		};*/
+
 		virtual ~Collider2D();
 		Collider2D(b2Body* body, bool isSensor = false, float friction = 0.3f, float bounciness = 0.1f, float density = 1.0f);
 
@@ -41,16 +38,10 @@ namespace Chimera
 
 		Collider2D& operator=(const Collider2D& other)
 		{
-			CM_CORE_ERROR("Copy Collider2D");
 
 			return *this;
 		}
-		/*(Collider2D& operator=(const Collider2D&& other) noexcept
-		{
-			CM_CORE_ERROR("Move operator Collider2D");
 
-			return *this;
-		}*/
 		void DestroyCollider()
 		{
 			m_ToBeDestroyed = true;

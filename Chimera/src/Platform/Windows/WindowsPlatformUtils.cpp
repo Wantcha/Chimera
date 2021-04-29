@@ -116,9 +116,13 @@ namespace Chimera
 
 		CoTaskMemFree(pwszFilePath);
 		pDialog->Release();
-		pItem->Release();
+		if (pItem)
+		{
+			pItem->Release();
+			return result;
+		}
+		return "";
 
-		return result;
 		//SafeRelease(&pItem);
 		//SafeRelease(&pDialog);
 	}

@@ -1,6 +1,7 @@
 #include "cmpch.h"
 #include "SceneCamera.h"
 
+#include "Chimera/Core/Application.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Chimera
@@ -30,7 +31,27 @@ namespace Chimera
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_AspectRatio = (float)width / (float)height;
+		m_Width = width; m_Height = height;
 		RecalculateProjection();
+	}
+	glm::vec3 SceneCamera::ScreenToWorld(const glm::vec2& mousePosition, const glm::mat4& camTransform)
+	{
+		glm::mat4 PV = m_Projection * glm::inverse(camTransform);
+		PV = glm::inverse(PV);
+		//glm::vec2 gameWindowOffset = Application::Get().GetGameWindowOffset();
+
+		glm::vec4 in;
+		in.x = (2.0f * ((float)(mousePosition.x/* - gameWindowOffset.x*/) / m_Width)) - 1.f;
+		in.y = (2.0f * ((float)(mousePosition.y/* - gameWindowOffset.y*/) / m_Height)) - 1.f;
+		in.z = 0.f;
+		in.w = 1.f;
+
+		glm::vec4 pos = PV * in;
+
+		pos /= pos.w;
+		pos.z = 0.f;
+
+		return pos;
 	}
 	void SceneCamera::RecalculateProjection()
 	{

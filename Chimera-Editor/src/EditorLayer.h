@@ -27,10 +27,11 @@ namespace Chimera
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnWindowFocus(WindowFocusEvent& e);
 		void NewScene();
 		void OpenScene();
 		void SaveSceneAs();
-		void SetProject();
+		bool SetProject();
 		void OpenProject(const std::string& path = "");
 		void BuildProject();
 

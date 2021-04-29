@@ -5,7 +5,7 @@ namespace Chimera
 {
 	Collider2D::~Collider2D()
 	{
-		CM_CORE_ERROR("Removing Collider2D");
+		//CM_CORE_ERROR("Removing Collider2D");
 		//m_Body->DestroyFixture(m_Fixture);
 	}
 	Collider2D::Collider2D(b2Body* body, bool isSensor, float friction, float bounciness, float density)

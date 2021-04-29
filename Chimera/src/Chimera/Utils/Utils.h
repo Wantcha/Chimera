@@ -28,4 +28,18 @@ namespace Chimera
 	public:
 		static bool TransformIntoRelativePath(const std::string& basePath, std::string& currentPath);
 	};
+
+	/*class Vector3Utils
+	{
+	public:
+		static glm::vec3 RotateTowards() {  };
+
+	};
+
+	class QuaternionUtils
+	{
+	public:
+		static glm::vec3 RotateTowards();
+
+	};*/
 }

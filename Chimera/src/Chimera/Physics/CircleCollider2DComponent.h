@@ -10,7 +10,7 @@ namespace Chimera
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent& other)
 		{
-			CM_CORE_ERROR("Copying CircleCollider2DComponent...");
+			//CM_CORE_ERROR("Copying CircleCollider2DComponent...");
 			m_Body = other.m_Body;
 			m_CircleColliderShape = other.m_CircleColliderShape;
 			m_ToBeDestroyed = other.m_ToBeDestroyed;
@@ -37,7 +37,7 @@ namespace Chimera
 		}
 		CircleCollider2DComponent(CircleCollider2DComponent&& other) noexcept
 		{
-			CM_CORE_ERROR("Moving CircleCollider2DComponent...");
+			//CM_CORE_ERROR("Moving CircleCollider2DComponent...");
 			m_Body = other.m_Body;
 			m_CircleColliderShape = other.m_CircleColliderShape;
 			m_ToBeDestroyed = other.m_ToBeDestroyed;
@@ -79,7 +79,7 @@ namespace Chimera
 
 		CircleCollider2DComponent& operator=(const CircleCollider2DComponent& other)
 		{
-			CM_CORE_ERROR("Copying Operation CircleCollider2DComponent...");
+			//CM_CORE_ERROR("Copying Operation CircleCollider2DComponent...");
 			if (this != &other)
 			{
 				m_Body = other.m_Body;
@@ -111,7 +111,7 @@ namespace Chimera
 
 		CircleCollider2DComponent& operator=(CircleCollider2DComponent&& other) noexcept
 		{
-			CM_CORE_ERROR("Moving Operation CircleCollider2DComponent...");
+			//CM_CORE_ERROR("Moving Operation CircleCollider2DComponent...");
 			if (this != &other)
 			{
 				m_Body = other.m_Body;

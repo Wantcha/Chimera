@@ -23,7 +23,7 @@ namespace Chimera
 		g_debugDraw.Create();
 		m_World->SetDebugDraw(&g_debugDraw);
 		m_World->SetContactListener(&m_ContactListener);
-		m_World->SetAllowSleeping(true);
+		m_World->SetAllowSleeping(false);
 
 		LuaManager::Get().Init(this);
 		/*m_Registry.each([&](auto entityID)
@@ -138,7 +138,7 @@ namespace Chimera
 			auto [transform, sprite, tag] = group.get<TransformComponent, SpriteRendererComponent, TagComponent>(entity);
 
 			if (tag.Enabled)
-				Renderer2D::DrawSprite(transform.GetGlobalTransform(), sprite, (int)entity);
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
 
 		if (m_EditColliders)
@@ -171,7 +171,7 @@ namespace Chimera
 		{
 			Entity* e = reinterpret_cast<Entity*>(m_DestructionStack.top()->GetUserData().pointer);
 			delete e;
-			CM_CORE_ERROR("Destroying body...");
+			//CM_CORE_ERROR("Destroying body...");
 			m_World->DestroyBody(m_DestructionStack.top());
 			m_DestructionStack.pop();
 		}
@@ -195,6 +195,7 @@ namespace Chimera
 	{
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
+		float cameraZ;
 
 		auto view = m_Registry.view<TransformComponent, CameraComponent>();
 		for (auto entity : view)
@@ -205,6 +206,7 @@ namespace Chimera
 			{
 				mainCamera = &camera.Camera;
 				cameraTransform = transform.GetTransform();
+				cameraZ = transform.GetPosition().z;
 				break;
 			}
 		}
@@ -214,12 +216,19 @@ namespace Chimera
 			Renderer2D::BeginScene(*mainCamera, cameraTransform);
 
 			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent, TagComponent>);
+			group.sort<TransformComponent>([&](const TransformComponent& a, const TransformComponent& b)
+				{
+					// ONLY GOOD FOR 2D! Normally, we would need to get the distance from the camera, but for a 2D context where the camera
+					// is only moving on the XY plane and the Z is more or less static (also the camera doesn't rotate), this works just fine.
+					return a.GetPosition().z < b.GetPosition().z;
+				});
+
 			for (auto entity : group)
 			{
 				auto [transform, sprite, tag] = group.get<TransformComponent, SpriteRendererComponent, TagComponent>(entity);
 
 				if (tag.Enabled)
-					Renderer2D::DrawSprite(transform.GetGlobalTransform(), sprite, (int)entity);
+					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
 
 			Renderer2D::EndScene();
@@ -241,7 +250,7 @@ namespace Chimera
 
 		while (!m_DestructionStack.empty())
 		{
-			CM_CORE_ERROR("Destroying body...");
+			//CM_CORE_ERROR("Destroying body...");
 			m_World->DestroyBody(m_DestructionStack.top());
 			m_DestructionStack.pop();
 		}
@@ -574,7 +583,7 @@ namespace Chimera
 		//delete e;
 		m_DestructionStack.push(component.Body);
 		//m_World->DestroyBody(component.Body);
-		CM_CORE_ERROR("Removing Body2DComponent...");
+		//CM_CORE_ERROR("Removing Body2DComponent...");
 	}
 
 	template<>
