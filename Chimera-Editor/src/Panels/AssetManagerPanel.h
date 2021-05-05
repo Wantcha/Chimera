@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include "../Project/ProjectManager.h"
+#include "Chimera/Utils/Utils.h"
 //#include <experimental/filesystem>
 
 namespace fs = std::filesystem;
@@ -78,6 +79,8 @@ namespace Chimera
 		fs::path m_RootPath/* = fs::current_path()/"assets"*/;
 		bool m_CurrentPathIsDir;
 		std::string m_OutPath;
+
+		std::string m_TransportedString;
 
 		std::vector<ImGuiFilepath::File> m_FilesInScope;
 	};

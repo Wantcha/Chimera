@@ -79,8 +79,13 @@ namespace Chimera
 				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 				{
 					// Set payload to carry the index of our item (could be anything)
-					ImGui::SetDragDropPayload("Dragged_File", &file.Path, sizeof(std::filesystem::path));
-					ImGui::Text(file.Path.string().c_str());
+					m_TransportedString = file.Path.string();
+					StringUtils::TransformIntoRelativePath(m_RootPath.string(), m_TransportedString);
+					//CM_CORE_ERROR(m_TransportedString);
+					//CM_CORE_ERROR(m_RootPath.string());
+					//CM_CORE_ERROR(file.Path.string());
+					ImGui::SetDragDropPayload("Dragged_File", &m_TransportedString, sizeof(std::string));
+					ImGui::Text(m_TransportedString.c_str());
 					ImGui::EndDragDropSource();
 				}
 				

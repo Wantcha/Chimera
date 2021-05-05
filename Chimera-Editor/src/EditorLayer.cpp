@@ -633,15 +633,16 @@ namespace Chimera
 		else
 		{
 			ProjectManager::Get().SetProjectPath(filepath);
-			m_SceneHierarchyPanel.SetRootPath(filepath + "\\assets");
-			if (!FileDialogs::IsDirectory(filepath + "\\library"))
+			if (!FileDialogs::IsDirectory(filepath + "\\library") || !FileDialogs::IsDirectory(filepath + "\\assets"))
 			{
 				ProjectManager::Get().SetProjectDirectories();
 				//ProjectManager::Get().SetProjectPath(filepath);
+				m_SceneHierarchyPanel.SetRootPath(filepath + "\\assets");
 				m_AssetManagerPanel.Init();
 				NewScene();
 				return true;
 			}
+			m_SceneHierarchyPanel.SetRootPath(filepath + "\\assets");
 			OpenProject(filepath);
 			return true;
 		}

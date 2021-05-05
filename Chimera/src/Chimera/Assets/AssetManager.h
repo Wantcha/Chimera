@@ -26,7 +26,7 @@ namespace Chimera
 
 				if (asset) return asset;
 
-				CM_CORE_WARN("No asset found. Loading it...");
+				//CM_CORE_WARN("No asset found. Loading it...");
 				asset = LoadAsset<T>(id);
 				cache->CacheAsset(id, asset);
 

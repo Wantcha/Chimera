@@ -13,7 +13,7 @@ namespace Chimera
 
 	void ProjectManager::SetProjectDirectories()
 	{
-		CM_CORE_ERROR(m_ProjectPath);
+		//CM_CORE_ERROR(m_ProjectPath);
 		std::string assets = m_ProjectPath + "\\assets";
 		std::string library = m_ProjectPath + "\\library";
 		FileDialogs::CreateFolder(assets);

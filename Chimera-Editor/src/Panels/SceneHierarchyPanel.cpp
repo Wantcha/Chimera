@@ -90,10 +90,10 @@ namespace Chimera
 
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Dragged_File"))
 			{
-				IM_ASSERT(payload->DataSize == sizeof(std::filesystem::path));
-				std::filesystem::path payload_n = *(const std::filesystem::path*)payload->Data;
-
-				SceneManager::Get().DeserializeEntity(payload_n.string());
+				IM_ASSERT(payload->DataSize == sizeof(std::string));
+				std::string payload_n = *(const std::string*)payload->Data;
+				//CM_CORE_ERROR(payload_n.string());
+				SceneManager::Get().DeserializeEntity(payload_n);
 
 			}
 
@@ -473,31 +473,49 @@ namespace Chimera
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			if (ImGui::MenuItem("Camera"))
+			if (!entity.HasComponent<CameraComponent>())
 			{
-				m_SelectionContext.AddComponent<CameraComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Camera"))
+				{
+					m_SelectionContext.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
-			if (ImGui::MenuItem("Sprite Renderer"))
+			
+			if (!entity.HasComponent<SpriteRendererComponent>())
 			{
-				m_SelectionContext.AddComponent<SpriteRendererComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Sprite Renderer"))
+				{
+					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
 
-			if (ImGui::MenuItem("Box Collider 2D"))
+			if (!entity.HasComponent<BoxCollider2DComponent>())
 			{
-				m_SelectionContext.AddComponent<BoxCollider2DComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Box Collider 2D"))
+				{
+					m_SelectionContext.AddComponent<BoxCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
-			if (ImGui::MenuItem("Circle Collider 2D"))
+
+			if (!entity.HasComponent<CircleCollider2DComponent>())
 			{
-				m_SelectionContext.AddComponent<CircleCollider2DComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Circle Collider 2D"))
+				{
+					m_SelectionContext.AddComponent<CircleCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
-			if (ImGui::MenuItem("Rigid Body 2D"))
+
+			if (!entity.HasComponent<RigidBody2DComponent>())
 			{
-				m_SelectionContext.AddComponent<RigidBody2DComponent>();
-				ImGui::CloseCurrentPopup();
+				if (ImGui::MenuItem("Rigid Body 2D"))
+				{
+					m_SelectionContext.AddComponent<RigidBody2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
 			}
 			if (ImGui::MenuItem("Lua Script"))
 			{
