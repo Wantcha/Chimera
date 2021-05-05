@@ -1,0 +1,22 @@
+Entities:
+  - Entity: 1
+    TagComponent:
+      Name: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [-2.38200068, -2.09577894, 0]
+      Rotation: [0, 0, 0]
+      Scale: [6.80814123, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: ""
+    BoxCollider2DComponent:
+      ColliderCenter: [0, 0, 0]
+      ColliderSize: [6.80814123, 1]
+      Sensor: false
+      Density: 1
+      Friction: 0.300000012
+      Bounciness: 0.100000001

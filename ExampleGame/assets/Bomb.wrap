@@ -1,0 +1,25 @@
+Entities:
+  - Entity: 1048577
+    TagComponent:
+      Name: Bomb
+      Enabled: true
+    TransformComponent:
+      Position: [-0.46558243, 9.41426849, -0.239246204]
+      Rotation: [0, -0, 0]
+      Scale: [0.587354541, 0.616271317, 0.326473206]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\bomb.png
+    CircleCollider2DComponent:
+      ColliderCenter: [0, 0, 0]
+      ColliderRadius: 0.550000012
+      Sensor: true
+      Density: 1
+      Friction: 0.300000012
+      Bounciness: 0.100000001
+    LuaScripts:
+      - LuaScriptComponent:
+          Filepath: \scripts\Bomb.lua

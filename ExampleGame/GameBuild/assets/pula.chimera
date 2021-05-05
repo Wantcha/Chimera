@@ -1,0 +1,59 @@
+Scene: Untitled
+Hierarchy Roots:
+  - 0
+  - 1
+  - 2
+Entities:
+  - Entity: 2
+    TagComponent:
+      Name: Ground
+      Enabled: true
+    TransformComponent:
+      Position: [0, -1.39787495, 0]
+      Rotation: [0, 0, 0]
+      Scale: [7.94982719, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [0.292035401, 0.222279802, 0.13438797, 1]
+      Texture: ""
+  - Entity: 1
+    TagComponent:
+      Name: Camera
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, 7.01897049]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        FOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 10000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 0
+    TagComponent:
+      Name: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [-0.0934581757, -0.0561990738, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\laurgras.png
+    LuaScripts:
+      - LuaScriptComponent:
+          Filepath: \scripts\EntityMovement.lua

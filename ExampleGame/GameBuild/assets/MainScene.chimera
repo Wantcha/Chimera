@@ -1,0 +1,157 @@
+Scene: Untitled
+Hierarchy Roots:
+  - 2
+  - 3
+  - 1048577
+  - 2097156
+  - 0
+Entities:
+  - Entity: 7
+    TagComponent:
+      Name: Survive
+      Enabled: true
+    TransformComponent:
+      Position: [0, 4.47280264, 7.45208263]
+      Rotation: [0, -0, 0]
+      Scale: [1.26999998, 1.26999998, 1.26999998]
+      Parent: 3
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\survive.png
+  - Entity: 6
+    TagComponent:
+      Name: Lose
+      Enabled: false
+    TransformComponent:
+      Position: [0, 0, 7.49979877]
+      Rotation: [0, -0, 0]
+      Scale: [2.50999999, 2.50999999, 2.50999999]
+      Parent: 3
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\lose.png
+  - Entity: 5
+    TagComponent:
+      Name: TimeLeftBar
+      Enabled: true
+    TransformComponent:
+      Position: [-2.98023224e-08, 3.77172303, 7.79368925]
+      Rotation: [0, -0, 0]
+      Scale: [12, 1, 1]
+      Parent: 3
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 0.372549027, 0.372549027, 1]
+      Texture: ""
+  - Entity: 2097156
+    TagComponent:
+      Name: GameManager
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    LuaScripts:
+      - LuaScriptComponent:
+          Filepath: \scripts\BombSpawner.lua
+      - LuaScriptComponent:
+          Filepath: \scripts\Countdown.lua
+  - Entity: 3
+    TagComponent:
+      Name: Camera
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0.0715315938, 8.134799]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        - 5
+        - 6
+        - 7
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        FOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 10000
+        OrthographicSize: 10
+        OrthographicNear: 0.100000001
+        OrthographicFar: 1000
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 2
+    TagComponent:
+      Name: Character
+      Enabled: true
+    TransformComponent:
+      Position: [-1.25, 0.276963949, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.188800111, 0.188800111, 0.0800000429]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\fish.png
+    RigidBody2DComponent:
+      BodyType: 1
+      GravityScale: 0
+      DiscreteCollision: true
+      FixedRotation: false
+    CircleCollider2DComponent:
+      ColliderCenter: [0.174999997, -0.0500000007, 0]
+      ColliderRadius: 0.550000012
+      Sensor: false
+      Density: 1
+      Friction: 0.300000012
+      Bounciness: 0.100000001
+    LuaScripts:
+      - LuaScriptComponent:
+          Filepath: \scripts\MoveTowardsMouse.lua
+  - Entity: 1048577
+    TagComponent:
+      Name: Bomb
+      Enabled: false
+    TransformComponent:
+      Position: [-0.46558243, 8.43960381, -0.239246204]
+      Rotation: [0, -0, 0]
+      Scale: [0.587354541, 0.616271317, 0.326473206]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\bomb.png
+    CircleCollider2DComponent:
+      ColliderCenter: [0, 0, 0]
+      ColliderRadius: 0.550000012
+      Sensor: false
+      Density: 1
+      Friction: 0.300000012
+      Bounciness: 0.100000001
+    LuaScripts:
+      - LuaScriptComponent:
+          Filepath: \scripts\Bomb.lua
+  - Entity: 0
+    TagComponent:
+      Name: Background
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, -1.87318563]
+      Rotation: [0, -0, 0]
+      Scale: [2.27740002, 2.27740002, 2.27740002]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\underwater_bg.jpg

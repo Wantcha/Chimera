@@ -1,0 +1,5 @@
+Build User Settings: v1.0
+Scenes:
+  - \MainMenu.chimera
+  - \MainScene.chimera
+  - \win.chimera

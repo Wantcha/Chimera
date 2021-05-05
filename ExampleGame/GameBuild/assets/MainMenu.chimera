@@ -1,0 +1,44 @@
+Scene: Untitled
+Hierarchy Roots:
+  - 0
+  - 1
+Entities:
+  - Entity: 1
+    TagComponent:
+      Name: Camera
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, 6.22960186]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+      Parent: 1048575
+      Children:
+        []
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        FOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 10000
+        OrthographicSize: 6
+        OrthographicNear: 0.00999999978
+        OrthographicFar: 1000
+      Primary: true
+      FixedAspectRatio: false
+    LuaScripts:
+      - LuaScriptComponent:
+          Filepath: \scripts\MainMenu.lua
+  - Entity: 0
+    TagComponent:
+      Name: Sprite
+      Enabled: true
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1.10000002, 1.10000002, 1.10000002]
+      Parent: 1048575
+      Children:
+        []
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      Texture: \textures\Title.png
