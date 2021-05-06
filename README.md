@@ -12,6 +12,8 @@ Chimera is a 2.5D game engine developed for learning purposes, but with the inte
 
 The Engine is currently in its early Alpha stage and is able to produce simple 2.5D games for Windows. Please take a look at the [Wiki](https://github.com/Wantcha/Chimera/wiki) for information regarding its usage.
 
+![chimerapreview2](https://i.imgur.com/vwJtFPJ.png)
+
 The libraries utilized in the engine are:
 * [EnTT](https://github.com/skypjack/entt)
 * [GLFW](https://www.glfw.org/)
