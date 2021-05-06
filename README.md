@@ -22,3 +22,4 @@ The libraries utilized in the engine are:
 * [Sol3](https://github.com/ThePhD/sol2)
 * [spdlog](https://github.com/gabime/spdlog)
 * [glm](https://github.com/g-truc/glm)
+* [box2D](https://box2d.org/)
