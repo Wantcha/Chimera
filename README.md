@@ -1,7 +1,7 @@
 # Chimera
-Chimera is a 2.5D game engine developed for learning purposes, but with the intent of becoming a usable piece of software where people can create games with. The engine supports:
+Chimera is a 2.5D game engine developed for learning purposes, but with the intent of becoming a usable piece of software where people can create games with, feat which has been achieved. The engine supports:
 
-- [x] 2D batch rendering for sprites
+- [x] 2.5D batch rendering for sprites
 - [x] 2D physics and collision detection
 - [x] Parenting
 - [x] Scene management
